@@ -5,7 +5,7 @@
   "author": "HumanGenome",
   "side": "client",
   "dll": "ClientHud.dll",
-  "sha256": "",
+  "sha256": "e8865da76f1e715f70d556cf772cf9fb3fd4ac20c65e78fde0c299c531992477",
   "game_build": 25335390,
   "description": "Shows the server's name and player count in the corner of the screen while you are connected. Installed on your PC by the Waygate app.",
   "dependencies": [],

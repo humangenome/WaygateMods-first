@@ -5,7 +5,7 @@
   "author": "HumanGenome",
   "side": "server",
   "dll": "ServerMultipliers.dll",
-  "sha256": "41d3457788a823ed2ef5e731338e7354cc0e2818d69f46459c08b9cd2241b496",
+  "sha256": "d85141e82e8c3740c97309eb17f1c4f36eda9ed8eb18a1bab0c783445768c7d5",
   "game_build": 25335390,
   "description": "XP, gold, loot chance, monster respawn time and day length multipliers, set by the server. Players install nothing.",
   "dependencies": [],
