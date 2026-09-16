@@ -1,0 +1,14 @@
+{
+  "id": "HumanGenome-MotdAnnounce",
+  "name": "Message of the Day",
+  "version": "1.0.0",
+  "author": "HumanGenome",
+  "side": "server",
+  "dll": "MotdAnnounce.dll",
+  "sha256": "",
+  "game_build": 25335390,
+  "description": "A welcome line in chat when a player joins, and a repeating announcement. Server side, players install nothing.",
+  "dependencies": [],
+  "source": "https://github.com/HumanGenome/WaygateMods-first/tree/main/MotdAnnounce",
+  "license": "MIT"
+}

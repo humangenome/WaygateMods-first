@@ -1,0 +1,14 @@
+{
+  "id": "HumanGenome-ServerMultipliers",
+  "name": "Server Multipliers",
+  "version": "1.0.0",
+  "author": "HumanGenome",
+  "side": "server",
+  "dll": "ServerMultipliers.dll",
+  "sha256": "41d3457788a823ed2ef5e731338e7354cc0e2818d69f46459c08b9cd2241b496",
+  "game_build": 25335390,
+  "description": "XP, gold, loot chance, monster respawn time and day length multipliers, set by the server. Players install nothing.",
+  "dependencies": [],
+  "source": "https://github.com/HumanGenome/WaygateMods-first/tree/main/ServerMultipliers",
+  "license": "MIT"
+}

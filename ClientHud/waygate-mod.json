@@ -1,0 +1,14 @@
+{
+  "id": "HumanGenome-ClientHud",
+  "name": "Client HUD",
+  "version": "1.0.0",
+  "author": "HumanGenome",
+  "side": "client",
+  "dll": "ClientHud.dll",
+  "sha256": "",
+  "game_build": 25335390,
+  "description": "Shows the server's name and player count in the corner of the screen while you are connected. Installed on your PC by the Waygate app.",
+  "dependencies": [],
+  "source": "https://github.com/HumanGenome/WaygateMods-first/tree/main/ClientHud",
+  "license": "MIT"
+}
