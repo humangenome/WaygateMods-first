@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>WaygateTravel</AssemblyName>
+    <RootNamespace>WaygateMods.WaygateTravel</RootNamespace>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/Kit.cs" Link="Shared/Kit.cs" />
+  </ItemGroup>
+</Project>

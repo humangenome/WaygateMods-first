@@ -1,0 +1,50 @@
+[
+  {
+    "section": "Chat",
+    "key": "Commands",
+    "type": "bool",
+    "default": true,
+    "label": "Chat commands",
+    "help": "Players can type /stats and /top.",
+    "group": "Chat"
+  },
+  {
+    "section": "Chat",
+    "key": "PrivateReplies",
+    "type": "bool",
+    "default": true,
+    "label": "Private answers",
+    "help": "On: only the player who asked sees the answer. Off: everyone sees it.",
+    "group": "Chat"
+  },
+  {
+    "section": "Chat",
+    "key": "TopCount",
+    "type": "int",
+    "default": 5,
+    "label": "Players listed by /top",
+    "help": "",
+    "group": "Chat",
+    "min": 3,
+    "max": 10,
+    "step": 1
+  },
+  {
+    "section": "Announcements",
+    "key": "DawnDigest",
+    "type": "bool",
+    "default": true,
+    "label": "Dawn digest",
+    "help": "One chat line at dawn about the day that ended.",
+    "group": "Announcements"
+  },
+  {
+    "section": "Announcements",
+    "key": "Milestones",
+    "type": "bool",
+    "default": true,
+    "label": "Milestones",
+    "help": "Announce a player's 100th, 500th, 1,000th kill and their first boss.",
+    "group": "Announcements"
+  }
+]

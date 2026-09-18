@@ -1,0 +1,14 @@
+{
+  "id": "HumanGenome-Chronicle",
+  "name": "Chronicle",
+  "version": "1.0.0",
+  "author": "HumanGenome",
+  "side": "server",
+  "dll": "Chronicle.dll",
+  "sha256": "7655651e4087f13fe805ac8aced14211f2a4ad16aad5755f1a069e5df358da01",
+  "game_build": 25350646,
+  "description": "Server stats and leaderboards: kills, elite and boss kills, deaths, bounties and time played per character, /stats and /top in chat, a digest at dawn. Players install nothing.",
+  "dependencies": [],
+  "source": "https://github.com/HumanGenome/WaygateMods-first/tree/main/Chronicle",
+  "license": "MIT"
+}

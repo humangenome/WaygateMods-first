@@ -1,0 +1,14 @@
+{
+  "id": "HumanGenome-WaygateTravel",
+  "name": "Waygate Travel",
+  "version": "1.0.0",
+  "author": "HumanGenome",
+  "side": "server",
+  "dll": "WaygateTravel.dll",
+  "sha256": "a41a7973fafeaa1092cf52daf43bfe6a54cfd37e8fd18a9a40d5640c6b71302c",
+  "game_build": 25350646,
+  "description": "Teleport commands for co-op groups: /summon your party, /tpa a friend, /home, /back and /where, with cooldowns and no travel out of a fight. Players install nothing.",
+  "dependencies": [],
+  "source": "https://github.com/HumanGenome/WaygateMods-first/tree/main/WaygateTravel",
+  "license": "MIT"
+}

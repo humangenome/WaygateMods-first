@@ -1,0 +1,14 @@
+{
+  "id": "HumanGenome-DarkNights",
+  "name": "Dark Nights",
+  "version": "1.0.0",
+  "author": "HumanGenome",
+  "side": "server",
+  "dll": "DarkNights.dll",
+  "sha256": "80c4fcaacbbf7199cd87240091341c81a09abaa5b126e5697ff5847400181a29",
+  "game_build": 25350646,
+  "description": "Harder nights and a blood moon every Nth night: more monster damage, more elites, storm weather, every dead monster back at dusk, no sleeping through it. Players install nothing.",
+  "dependencies": [],
+  "source": "https://github.com/HumanGenome/WaygateMods-first/tree/main/DarkNights",
+  "license": "MIT"
+}

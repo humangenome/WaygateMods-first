@@ -1,0 +1,140 @@
+[
+  {
+    "section": "Commands",
+    "key": "Summon",
+    "type": "bool",
+    "default": true,
+    "label": "/summon",
+    "help": "Ask your party to come to you.",
+    "group": "Commands"
+  },
+  {
+    "section": "Commands",
+    "key": "Tpa",
+    "type": "bool",
+    "default": true,
+    "label": "/tpa <name>",
+    "help": "Ask one player if you may come to them.",
+    "group": "Commands"
+  },
+  {
+    "section": "Commands",
+    "key": "Home",
+    "type": "bool",
+    "default": true,
+    "label": "/home",
+    "help": "Go to your respawn point.",
+    "group": "Commands"
+  },
+  {
+    "section": "Commands",
+    "key": "Back",
+    "type": "bool",
+    "default": true,
+    "label": "/back",
+    "help": "Return to where you were before your last trip.",
+    "group": "Commands"
+  },
+  {
+    "section": "Commands",
+    "key": "Where",
+    "type": "bool",
+    "default": true,
+    "label": "/where <name>",
+    "help": "Which area a player is in.",
+    "group": "Commands"
+  },
+  {
+    "section": "Cooldowns",
+    "key": "SummonSeconds",
+    "type": "int",
+    "default": 300,
+    "label": "/summon cooldown",
+    "help": "",
+    "group": "Cooldowns",
+    "min": 0,
+    "max": 3600,
+    "step": 30,
+    "suffix": "sec"
+  },
+  {
+    "section": "Cooldowns",
+    "key": "TpaSeconds",
+    "type": "int",
+    "default": 120,
+    "label": "/tpa cooldown",
+    "help": "",
+    "group": "Cooldowns",
+    "min": 0,
+    "max": 3600,
+    "step": 30,
+    "suffix": "sec"
+  },
+  {
+    "section": "Cooldowns",
+    "key": "HomeSeconds",
+    "type": "int",
+    "default": 300,
+    "label": "/home cooldown",
+    "help": "",
+    "group": "Cooldowns",
+    "min": 0,
+    "max": 3600,
+    "step": 30,
+    "suffix": "sec"
+  },
+  {
+    "section": "Cooldowns",
+    "key": "BackSeconds",
+    "type": "int",
+    "default": 60,
+    "label": "/back cooldown",
+    "help": "",
+    "group": "Cooldowns",
+    "min": 0,
+    "max": 3600,
+    "step": 30,
+    "suffix": "sec"
+  },
+  {
+    "section": "Rules",
+    "key": "RequestTimeoutSeconds",
+    "type": "int",
+    "default": 60,
+    "label": "A request waits",
+    "help": "How long a /summon or /tpa request waits for an answer.",
+    "group": "Rules",
+    "min": 15,
+    "max": 300,
+    "step": 5,
+    "suffix": "sec"
+  },
+  {
+    "section": "Rules",
+    "key": "RefuseInCombat",
+    "type": "bool",
+    "default": true,
+    "label": "No travel in a fight",
+    "help": "No travel out of a fight or into one.",
+    "group": "Rules"
+  },
+  {
+    "section": "Rules",
+    "key": "RefuseLockedAreas",
+    "type": "bool",
+    "default": true,
+    "label": "No travel into locked areas",
+    "help": "Areas a bounty has locked stay locked.",
+    "group": "Rules"
+  },
+  {
+    "section": "Rules",
+    "key": "NoCooldownNames",
+    "type": "text",
+    "default": "",
+    "label": "Characters with no cooldown",
+    "help": "Character names, separated by commas.",
+    "group": "Rules",
+    "max_length": 200
+  }
+]
