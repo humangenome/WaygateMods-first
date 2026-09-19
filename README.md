@@ -10,6 +10,7 @@ First-party mods for Dimraeth servers run with [WaygateServer](https://github.co
 | [Chronicle](Chronicle/) | server | Kills, deaths, bounties and time played per character, `/stats` and `/top` in chat, a digest at dawn |
 | [DarkNights](DarkNights/) | server | Harder nights, and a blood moon every Nth night |
 | [WaygateTravel](WaygateTravel/) | server | `/summon`, `/tpa`, `/home`, `/back` and `/where` for co-op groups |
+| [BountyBoardPlus](BountyBoardPlus/) | server | Bounty boards tuned by the server: new postings on a clock, cooldowns off or shortened, a higher tier ceiling, more postings, `/bounties` in chat |
 | [HordeNights](HordeNights/) | server | Waves of monsters come for the players every Nth night or on `/horde start` |
 
 ## Build and package

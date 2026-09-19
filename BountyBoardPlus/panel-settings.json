@@ -1,0 +1,155 @@
+[
+  {
+    "section": "Board",
+    "key": "RefreshEveryMinutes",
+    "type": "int",
+    "default": 15,
+    "label": "New postings every",
+    "help": "Real minutes between new postings, on top of the game's own refresh. 0 = the game's own refresh only.",
+    "group": "The board",
+    "min": 0,
+    "max": 1440,
+    "step": 5,
+    "suffix": "min"
+  },
+  {
+    "section": "Board",
+    "key": "ExtraSlots",
+    "type": "int",
+    "default": 2,
+    "label": "Extra postings per board",
+    "help": "A board never holds more than 10.",
+    "group": "The board",
+    "min": 0,
+    "max": 7,
+    "step": 1
+  },
+  {
+    "section": "Cooldowns",
+    "key": "Factor",
+    "type": "float",
+    "default": 0,
+    "label": "Bounty cooldown",
+    "help": "0 = a finished bounty can be taken again at once. 1 = the game's own cooldown. 0.5 = half the days.",
+    "group": "Cooldowns and tiers",
+    "min": 0,
+    "max": 1,
+    "step": 0.25,
+    "suffix": "x"
+  },
+  {
+    "section": "Tiers",
+    "key": "CapBonus",
+    "type": "int",
+    "default": 2,
+    "label": "Tier ceiling bonus",
+    "help": "Added to the ceiling the world's story progress allows. Each bounty still opens its tiers one by one.",
+    "group": "Cooldowns and tiers",
+    "min": 0,
+    "max": 9,
+    "step": 1
+  },
+  {
+    "section": "Announcements",
+    "key": "Refresh",
+    "type": "bool",
+    "default": true,
+    "label": "New postings",
+    "help": "A chat line when this mod posts new bounties.",
+    "group": "Chat lines"
+  },
+  {
+    "section": "Announcements",
+    "key": "TierUnlocks",
+    "type": "bool",
+    "default": true,
+    "label": "Tier unlocks",
+    "help": "A chat line when a bounty's next tier opens for the world.",
+    "group": "Chat lines"
+  },
+  {
+    "section": "Announcements",
+    "key": "Bounties",
+    "type": "bool",
+    "default": true,
+    "label": "Finished bounties",
+    "help": "A chat line when a player finishes a bounty.",
+    "group": "Chat lines"
+  },
+  {
+    "section": "Announcements",
+    "key": "BossKills",
+    "type": "bool",
+    "default": true,
+    "label": "Boss kills",
+    "help": "A chat line when a boss dies.",
+    "group": "Chat lines"
+  },
+  {
+    "section": "Announcements",
+    "key": "MiniBosses",
+    "type": "bool",
+    "default": false,
+    "label": "Mini-bosses count",
+    "help": "Announce mini-boss kills too.",
+    "group": "Chat lines"
+  },
+  {
+    "section": "Chat",
+    "key": "Commands",
+    "type": "bool",
+    "default": true,
+    "label": "Chat command",
+    "help": "Players can type /bounties.",
+    "group": "Chat"
+  },
+  {
+    "section": "Chat",
+    "key": "PrivateReplies",
+    "type": "bool",
+    "default": true,
+    "label": "Private answers",
+    "help": "On: only the player who asked sees the answer. Off: everyone sees it.",
+    "group": "Chat"
+  },
+  {
+    "section": "Messages",
+    "key": "Refresh",
+    "type": "text",
+    "default": "New bounties are posted on the {board} board.",
+    "label": "New postings",
+    "help": "{board} is the board's name. Leave empty to say nothing.",
+    "group": "Wording",
+    "max_length": 160
+  },
+  {
+    "section": "Messages",
+    "key": "TierUnlock",
+    "type": "text",
+    "default": "{bounty}: tier {tier} is now open.",
+    "label": "Tier unlock",
+    "help": "{bounty} and {tier}. Leave empty to say nothing.",
+    "group": "Wording",
+    "max_length": 160
+  },
+  {
+    "section": "Messages",
+    "key": "BountyDone",
+    "type": "text",
+    "default": "{player} finished the bounty {bounty}{tier}.",
+    "label": "Finished bounty",
+    "help": "{player}, {bounty}, and {tier}, which reads \" (tier 3)\" or nothing.",
+    "group": "Wording",
+    "max_length": 160
+  },
+  {
+    "section": "Messages",
+    "key": "BossKill",
+    "type": "text",
+    "default": "{player} felled {boss}{tier}.",
+    "label": "Boss kill",
+    "help": "{player}, {boss}, and {tier}, which reads \" (tier 3 bounty)\" or nothing.",
+    "group": "Wording",
+    "max_length": 160
+  }
+]
