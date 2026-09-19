@@ -101,3 +101,17 @@ On a server rented through a hosting panel that lists this mod, pick it there an
 The game ships a wave engine (`ArenaManager`) for one arena, but no manager object exists in the world, so the mod runs its own loop in that engine's shape. Monsters are made by `SceneHandler.SpawnMonsterInstance`, the runtime spawner the game's wave engine, summons and spawn spells call, with its spawn effect, its auto-aggro and its transient flag on; a wave's health and damage go through `Monster.ApplySpawnStatProfile` in the spawner's own configure step, as the engine does. Spawn points are sampled on the area's walk mesh in a ring round a living defender, and only a point with a clear walk line to that defender is used. Each monster is handed to the game's own aggro call (`SceneHandler.AggroMonster`). Some monsters of the game wait for their prey to come to them (wolves and droops do, goblins do not): a horde monster that stands still away from every defender is walked over with the game's escort behaviour (`MonsterBehaviour.SetEscortTarget`) and released into the fight when it arrives; one that still does not move is put down a few steps from the defender. A monster is counted dead when the game says it is, its corpse is removed after 25 seconds, and the end of a horde despawns whatever is left. Gold goes through the game's world-gold call (`ServerRPC.AddGoldToWorldServerRpc`), so whoever picks a pile up is paid by the game; healing sets health, concentration and stamina to their maximum. The top slayer is read after `QuestManager.RegisterMonsterDeath`, the game's own kill credit. Chat commands are read in a prefix on `ChatSystem.SendMessageToServerServerRpc`. Nothing is written to a character or to the world save, and no XP is granted outside the game's own kill path.
 
 If a game update removes a method the mod depends on, the mod switches the affected feature off, or itself off, and writes one line saying so. It never stops the server.
+
+Tested on game build 25350646 with WaygateServer 0.3.9, with headless test clients: monsters of all four themes spawn and are seen by clients, monsters and players kill each other with the game's own XP and gold paid, the cap on living monsters holds, every ending removes every horde monster, and a server ended in the middle of a horde starts again without them. Not yet looked at on a real player's screen.
+
+## With other mods
+
+[Dark Nights](../DarkNights/) scales what monsters deal and pay at night, horde monsters included. With `WithBloodMoon` on, a horde also comes on each of its blood moons; the mod reads Dark Nights' own `nights.txt` and needs nothing else from it. [Chronicle](../Chronicle/) counts horde kills like any other kill.
+
+## Build
+
+Set `WAYGATE_PACK` to the `BepInEx` folder of an unpacked WaygateServer package (or of a game folder after one Waygate Connect), then `dotnet build -c Release`. The interop assemblies are referenced from there and are not part of this repository. `../Shared/Kit.cs` is compiled into the dll.
+
+## License
+
+MIT.
