@@ -106,5 +106,23 @@
     "description": "Teleport commands for co-op groups: /summon your party, /tpa a friend, /home, /back and /where, with cooldowns and no travel out of a fight. Players install nothing.",
     "dependencies": [],
     "revoked": false
+  },
+  {
+    "id": "HumanGenome-HordeNights",
+    "name": "Horde Nights",
+    "version": "1.0.0",
+    "author": "HumanGenome",
+    "side": "server",
+    "game_build": 25350646,
+    "dll": "HordeNights.dll",
+    "dll_sha256": "46a85e8cfff2d29edaa4e5ff0233d997a4a11f03dd1f12800a61ed1ede7a4107",
+    "sha256": "8b8f1919058777d7f4b5e3f996d10b41edb1772e2e14fe7166f10997686323ea",
+    "size": 27672,
+    "url": "https://github.com/HumanGenome/WaygateMods-first/releases/download/HumanGenome-HordeNights-v1.0.0/HumanGenome-HordeNights-1.0.0.zip",
+    "source": "https://github.com/HumanGenome/WaygateMods-first/tree/main/HordeNights",
+    "license": "MIT",
+    "description": "Waves of monsters come for the players every Nth night or when an admin calls one: a warning in chat, wave after wave round the defenders, healing and gold between waves, and a clean-up that removes every monster it made. Players install nothing.",
+    "dependencies": [],
+    "revoked": false
   }
 ]

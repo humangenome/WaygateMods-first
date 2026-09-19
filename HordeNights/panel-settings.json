@@ -1,0 +1,352 @@
+[
+  {
+    "section": "Schedule",
+    "key": "EveryNights",
+    "type": "int",
+    "default": 3,
+    "label": "A horde every",
+    "help": "0 = only when an admin calls one.",
+    "group": "When hordes come",
+    "min": 0,
+    "max": 30,
+    "step": 1,
+    "suffix": "nights"
+  },
+  {
+    "section": "Schedule",
+    "key": "AtHour",
+    "type": "int",
+    "default": 21,
+    "label": "Warning at game hour",
+    "help": "The game calls it night from 20.",
+    "group": "When hordes come",
+    "min": 0,
+    "max": 23,
+    "step": 1,
+    "suffix": ":00"
+  },
+  {
+    "section": "Schedule",
+    "key": "WarnSeconds",
+    "type": "int",
+    "default": 120,
+    "label": "Warning before the first wave",
+    "help": "",
+    "group": "When hordes come",
+    "min": 0,
+    "max": 600,
+    "step": 15,
+    "suffix": "sec"
+  },
+  {
+    "section": "Schedule",
+    "key": "MinPlayers",
+    "type": "int",
+    "default": 1,
+    "label": "Players needed online",
+    "help": "A scheduled horde is skipped with fewer.",
+    "group": "When hordes come",
+    "min": 1,
+    "max": 16,
+    "step": 1
+  },
+  {
+    "section": "Schedule",
+    "key": "WithBloodMoon",
+    "type": "bool",
+    "default": false,
+    "label": "Also on a blood moon",
+    "help": "Needs the Dark Nights mod on this server.",
+    "group": "When hordes come"
+  },
+  {
+    "section": "Horde",
+    "key": "Theme",
+    "type": "select",
+    "default": "Droops",
+    "label": "Monsters",
+    "help": "Droops are the weakest. Wolves and the corrupted are for seasoned groups.",
+    "group": "The horde",
+    "options": [
+      {
+        "value": "Droops",
+        "label": "Droop swarm"
+      },
+      {
+        "value": "Goblins",
+        "label": "Goblin warband"
+      },
+      {
+        "value": "Wolves",
+        "label": "Wolf pack"
+      },
+      {
+        "value": "Corrupted",
+        "label": "Corrupted host"
+      },
+      {
+        "value": "Random",
+        "label": "A different horde each time"
+      }
+    ]
+  },
+  {
+    "section": "Horde",
+    "key": "Waves",
+    "type": "int",
+    "default": 5,
+    "label": "Waves",
+    "help": "",
+    "group": "The horde",
+    "min": 1,
+    "max": 10,
+    "step": 1
+  },
+  {
+    "section": "Horde",
+    "key": "Size",
+    "type": "float",
+    "default": 1,
+    "label": "Monsters per wave",
+    "help": "A multiple of the theme's own numbers.",
+    "group": "The horde",
+    "min": 0.5,
+    "max": 3,
+    "step": 0.25,
+    "suffix": "x"
+  },
+  {
+    "section": "Horde",
+    "key": "PerExtraPlayer",
+    "type": "float",
+    "default": 0.5,
+    "label": "More monsters per extra defender",
+    "help": "0.5 = half again for each defender after the first.",
+    "group": "The horde",
+    "min": 0,
+    "max": 1,
+    "step": 0.1,
+    "suffix": "x"
+  },
+  {
+    "section": "Horde",
+    "key": "MaxAlive",
+    "type": "int",
+    "default": 10,
+    "label": "Most horde monsters alive at once",
+    "help": "The rest of a wave arrives as monsters die. Each living horde monster costs the server about 3% of a CPU core.",
+    "group": "The horde",
+    "min": 4,
+    "max": 40,
+    "step": 1
+  },
+  {
+    "section": "Horde",
+    "key": "HealthPerWave",
+    "type": "float",
+    "default": 0.1,
+    "label": "Health added per wave",
+    "help": "0.1 = ten percent more each wave.",
+    "group": "The horde",
+    "min": 0,
+    "max": 1,
+    "step": 0.05
+  },
+  {
+    "section": "Horde",
+    "key": "DamagePerWave",
+    "type": "float",
+    "default": 0.1,
+    "label": "Damage added per wave",
+    "help": "",
+    "group": "The horde",
+    "min": 0,
+    "max": 1,
+    "step": 0.05
+  },
+  {
+    "section": "Horde",
+    "key": "WaveSeconds",
+    "type": "int",
+    "default": 150,
+    "label": "Next wave arrives after",
+    "help": "Even when the last wave still stands.",
+    "group": "The horde",
+    "min": 30,
+    "max": 600,
+    "step": 15,
+    "suffix": "sec"
+  },
+  {
+    "section": "Horde",
+    "key": "RestSeconds",
+    "type": "int",
+    "default": 15,
+    "label": "Pause after a cleared wave",
+    "help": "",
+    "group": "The horde",
+    "min": 5,
+    "max": 120,
+    "step": 5,
+    "suffix": "sec"
+  },
+  {
+    "section": "Horde",
+    "key": "MaxMinutes",
+    "type": "int",
+    "default": 20,
+    "label": "The horde gives up after",
+    "help": "",
+    "group": "The horde",
+    "min": 5,
+    "max": 60,
+    "step": 5,
+    "suffix": "min"
+  },
+  {
+    "section": "Horde",
+    "key": "SpawnDistance",
+    "type": "float",
+    "default": 12,
+    "label": "Monsters appear this far away",
+    "help": "",
+    "group": "The horde",
+    "min": 3,
+    "max": 25,
+    "step": 1
+  },
+  {
+    "section": "Horde",
+    "key": "HealBetweenWaves",
+    "type": "bool",
+    "default": true,
+    "label": "Heal defenders between waves",
+    "help": "",
+    "group": "The horde"
+  },
+  {
+    "section": "Horde",
+    "key": "MonsterLoot",
+    "type": "bool",
+    "default": true,
+    "label": "Horde monsters drop loot",
+    "help": "XP from kills is always the game's own.",
+    "group": "The horde"
+  },
+  {
+    "section": "Horde",
+    "key": "CustomWaves",
+    "type": "text",
+    "default": "",
+    "label": "Your own waves",
+    "help": "Instead of a theme. Waves split by |, monsters by comma: GoblinRipper x4, GoblinFlaskrat x2 | GoblinBasher x3",
+    "group": "The horde",
+    "max_length": 300
+  },
+  {
+    "section": "Rewards",
+    "key": "GoldPerWave",
+    "type": "int",
+    "default": 40,
+    "label": "Gold per cleared wave",
+    "help": "Dropped beside each defender.",
+    "group": "Rewards",
+    "min": 0,
+    "max": 1000,
+    "step": 10,
+    "suffix": "gold"
+  },
+  {
+    "section": "Rewards",
+    "key": "GoldOnVictory",
+    "type": "int",
+    "default": 250,
+    "label": "Gold for the last wave",
+    "help": "Dropped beside each defender.",
+    "group": "Rewards",
+    "min": 0,
+    "max": 5000,
+    "step": 50,
+    "suffix": "gold"
+  },
+  {
+    "section": "Areas",
+    "key": "Exclude",
+    "type": "text",
+    "default": "EarlwoodVillage, GuildHall, PlayerBase",
+    "label": "Areas a horde never comes to",
+    "help": "The game's area names, separated by commas.",
+    "group": "Rules",
+    "max_length": 300
+  },
+  {
+    "section": "Commands",
+    "key": "Admins",
+    "type": "text",
+    "default": "",
+    "label": "Who may type /horde start and /horde stop",
+    "help": "Character names, separated by commas. Empty = nobody.",
+    "group": "Rules",
+    "max_length": 200
+  },
+  {
+    "section": "Messages",
+    "key": "Warning",
+    "type": "text",
+    "default": "{horde} is closing in on {area}. It arrives in {seconds} seconds.",
+    "label": "Warning",
+    "help": "Leave empty to say nothing. {horde}, {area} and {seconds} are filled in.",
+    "group": "Chat lines",
+    "max_length": 160
+  },
+  {
+    "section": "Messages",
+    "key": "Wave",
+    "type": "text",
+    "default": "Wave {wave} of {waves}: {name}.",
+    "label": "A wave arrives",
+    "help": "",
+    "group": "Chat lines",
+    "max_length": 160
+  },
+  {
+    "section": "Messages",
+    "key": "WaveCleared",
+    "type": "text",
+    "default": "Wave {wave} cleared.",
+    "label": "A wave is cleared",
+    "help": "",
+    "group": "Chat lines",
+    "max_length": 160
+  },
+  {
+    "section": "Messages",
+    "key": "Victory",
+    "type": "text",
+    "default": "The horde is broken. {area} is safe.",
+    "label": "The last wave is cleared",
+    "help": "",
+    "group": "Chat lines",
+    "max_length": 160
+  },
+  {
+    "section": "Messages",
+    "key": "Withdraw",
+    "type": "text",
+    "default": "The horde withdraws from {area}.",
+    "label": "The horde gives up",
+    "help": "",
+    "group": "Chat lines",
+    "max_length": 160
+  },
+  {
+    "section": "Messages",
+    "key": "Overrun",
+    "type": "text",
+    "default": "The horde has overrun {area}.",
+    "label": "Every defender is dead",
+    "help": "",
+    "group": "Chat lines",
+    "max_length": 160
+  }
+]

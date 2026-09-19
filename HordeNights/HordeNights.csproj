@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>HordeNights</AssemblyName>
+    <RootNamespace>WaygateMods.HordeNights</RootNamespace>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/Kit.cs" Link="Shared/Kit.cs" />
+    <Reference Include="UnityEngine.AIModule"><HintPath>$(PackDir)/interop/UnityEngine.AIModule.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>

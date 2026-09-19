@@ -1,0 +1,14 @@
+{
+  "id": "HumanGenome-HordeNights",
+  "name": "Horde Nights",
+  "version": "1.0.0",
+  "author": "HumanGenome",
+  "side": "server",
+  "dll": "HordeNights.dll",
+  "sha256": "46a85e8cfff2d29edaa4e5ff0233d997a4a11f03dd1f12800a61ed1ede7a4107",
+  "game_build": 25350646,
+  "description": "Waves of monsters come for the players every Nth night or when an admin calls one: a warning in chat, wave after wave round the defenders, healing and gold between waves, and a clean-up that removes every monster it made. Players install nothing.",
+  "dependencies": [],
+  "source": "https://github.com/HumanGenome/WaygateMods-first/tree/main/HordeNights",
+  "license": "MIT"
+}
