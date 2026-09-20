@@ -664,7 +664,7 @@ namespace WaygateMods.CorruptedRealm
 		// removes it from every client. The same call is made here.
 		internal static void Tick(float now)
 		{
-			if (sDrops.Count == 0 || now < sNextLook) return;
+			if ((sDrops.Count == 0 && sClearedUnsaid == 0) || now < sNextLook) return;
 			sNextLook = now + 5f;
 			int cleared = 0;
 			for (int i = sDrops.Count - 1; i >= 0; i--)
@@ -682,8 +682,17 @@ namespace WaygateMods.CorruptedRealm
 				}
 				catch (Exception e) { ModKit.Dbg("clearing a drop: " + e.Message); }
 			}
-			if (cleared > 0) ModKit.Say("Corrupted Realm cleared " + cleared + (cleared == 1 ? " drop" : " drops") + " of empowered monsters that nobody picked up.");
+			// One line a minute at most, however many rounds the clean-up took.
+			sClearedUnsaid += cleared;
+			if (sClearedUnsaid > 0 && now >= sNextSay)
+			{
+				sNextSay = now + 60f;
+				ModKit.Say("Corrupted Realm cleared " + sClearedUnsaid + (sClearedUnsaid == 1 ? " drop" : " drops") + " of empowered monsters that nobody picked up.");
+				sClearedUnsaid = 0;
+			}
 		}
+		private static int sClearedUnsaid;
+		private static float sNextSay;
 	}
 
 	internal sealed class Champion

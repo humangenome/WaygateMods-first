@@ -4,13 +4,15 @@ In Dimraeth an empowered monster is a rare sight, a kill of one passes without a
 
 ## What changes
 
-**Empowered monsters** are the game's own elites: a monster that carries one of the game's empowerments (Brutal, Venomous, Swift, Frostbound, Flamecaller, Storm Aura, Spiteful, Arcane Shielded, Blighted, Mortar, Unyielding) and more health with it (a Wildwood Wolf's doubles). The game lets only some monster types be empowered (about one spawn point in ten across the world, none in the starting areas) and gives each of those a 33% chance. The mod raises that chance threefold by default, which empowers nearly every one of them, and gives every other hostile monster a 5% chance of its own. Bosses, minibosses, harmless animals and things that do not move are left out, and by default so is the area new characters start in.
+**Empowered monsters** are the game's own elites: a monster that carries one of the game's empowerments (Brutal, Venomous, Swift, Frostbound, Flamecaller, Storm Aura, Spiteful, Arcane Shielded, Blighted, Mortar, Unyielding) and more health with it (a Wildwood Wolf's doubles). The game lets only some monster types be empowered (about one spawn point in ten across the world, none in the starting areas) and gives each of those a 33% chance. The mod raises that chance threefold by default, which empowers nearly every one of them, and gives every other hostile monster a 5% chance of its own. Bosses, minibosses, monsters with an event of the world's story on their death or with boss stages, harmless animals and things that do not move are left out, and by default so is the area new characters start in. A boss or miniboss is outside the mod altogether: never rolled, never levelled, never paid more, even the two minibosses the game itself can empower.
 
 Each empowered monster gains 3 levels, attacks 1.2 times as fast and carries the game's armor-up effect at 1.25, and its kill pays 1.5 times the XP, twice the gold and twice the drop chance, on top of what the game already adds for an empowered kill. When the empowerment ends (at death) the levels and the effects leave with it, so a monster that returns as an ordinary one is ordinary.
 
 **Kill lines.** `Wren slew a Brutal Drooplet.` goes to everyone when a player kills an empowered monster.
 
-**Champions** (off until `Champion/EveryMinutes` is set). Every N minutes the server picks a connected player who is alive and not in a safe area, and spawns an empowered monster of one of the configured types a few steps away, already hunting them: `A champion has come for Wren in The Lost Caverns: Morgath the Brutal, a Wildwood Wolf Alpha.` Its death is announced and counted. A champion nobody is fighting leaves after 20 minutes. Champions are not saved with the world. The clock runs only while somebody is connected and carries over a restart.
+**Champions** (off until `Champion/EveryMinutes` is set). Every N minutes the server picks a connected player who is alive and not in a safe area, and spawns an empowered monster of one of the configured types a few steps away, already hunting them: `A champion has come for Wren in The Lost Caverns: Morgath the Brutal, a Wildwood Wolf Alpha.` Its death is announced and counted. A champion nobody is fighting leaves after 20 minutes. Champions are not saved with the world. A champion is a monster the mod adds, so it stays out of the world's story: a boss, a miniboss, a monster with a story event on its death or with boss stages cannot be one (the game ties those to the kind of monster, not to the one it placed), and while the game runs a champion's death or one of its reactions, its call that starts a story event is skipped. A kill of a champion counts for "slay N of X" quest steps like any other monster of its kind. The clock runs only while somebody is connected and carries over a restart.
+
+**Drops.** The game removes a drop from the ground after 30 minutes, and every drop left lying costs the server CPU. Because the mod raises what empowered monsters drop, it notes the drops that appear in an empowered monster's own drop checks and removes what nobody picked up after 10 minutes (`Cleanup/DropsAfterMinutes`). Drops of other monsters are never touched.
 
 **Player count.** Each connected player beyond the first adds 10% to the damage hostile monsters deal (four players: 1.3 times). Set `Scaling/PerPlayer` to 0 to switch it off.
 
@@ -31,11 +33,12 @@ Each empowered monster gains 3 levels, attacks 1.2 times as fast and carries the
 | `Elites` | `ExtraEffects` | More effects, as `Effect:multiplier` or `Effect:multiplier:additive` entries separated by commas (`ResistanceUp:1.25,SpeedUp:1.1`). Names are the game's `Effect` names. `Invincibility`, `Unkillable`, `Invisibility`, `Shield` and every `...OverTime` effect are refused | empty |
 | `Elites` | `XP`, `Gold`, `Loot` | Pay for an empowered kill, 1 to 5 each | 1.5, 2, 2 |
 | `Champion` | `EveryMinutes` | A champion this often, 0 to 240. 0 = never | 0 |
-| `Champion` | `Types` | The game's `MonsterType` names a champion can be | `WildwoodWolfAlpha,GoblinBasherT2,GoblinRipperT2` |
+| `Champion` | `Types` | The game's `MonsterType` names a champion can be. Boss and story kinds are refused | `GoblinBasher,GoblinBasherT2,GoblinRipperT2,CorruptedWildwoodWolf` |
 | `Champion` | `MaxAlive` | Champions out at the same time, 1 to 5 | 2 |
 | `Champion` | `LeaveAfterMinutes` | An unfought champion leaves after this long, 5 to 120 | 20 |
 | `Champion` | `SafeScenes` | The game's scene names where no champion comes for a player | `EarlwoodVillage,GuildHall,PlayerBase` |
 | `Scaling` | `PerPlayer` | Monster damage added per connected player beyond the first, 0 to 0.5 | 0.1 |
+| `Cleanup` | `DropsAfterMinutes` | Unclaimed drops of empowered monsters are removed after this long, 0 to 30. 0 = leave it to the game (30 minutes) | 10 |
 | `Announce` | `EliteKills`, `Champions` | The chat lines | true, true |
 | `Chat` | `Commands` | `/realm` and `/champion` | true |
 | `Chat` | `AdminNames` | Character names that may type `/champion`, separated by commas | empty |
@@ -63,11 +66,13 @@ After any `Monster.ApplyEmpowerment`, the game's or the mod's, the mod raises th
 
 The pay dials (`GetXPMultiplier`, `GetGoldMultiplier`, `GetLootChanceMultiplier`) are handed a monster's settings, not the monster, so the mod notes which monster is being paid for around `XP.CalculateXPGained`, `MonsterUtils.GoldDropCheck` and `MonsterUtils.ApplyDropChanceModifiers` and multiplies only when it is an empowered one. XP moves only through the game's own reward path. Kill credit comes from `QuestManager.RegisterMonsterDeath`, which the server calls for every monster death with the player who gets the credit. `GetMonsterDamageDealtMultiplier` carries the player-count scaling; monsters allied to a player are left alone.
 
+A kind's ties to the story are read from the game's own prefab for it (`NetworkPrefabManager.MonsterPrefabs`: `MonsterConfiguration.EventOnDeath`, `DangerLevel`, `MonsterRank`, a `BossInvulnerability` component) before anything is spawned, and asked again of the spawned monster. The game starts a story event on behalf of one monster in `Monster.OnDeath`, in `MonsterBehaviour.ActivateReaction` and in a boss's stages; for a champion the first two are bracketed and `EventsManager.ActivateEventServerRpc` is skipped inside them (kinds with boss stages are never champions). If those patches cannot be applied on a game version, champions are switched off. Drops are told apart by listing the game's three sets of ground objects (`SimpleObject`, `RuneObject`, `GoldDropPickup`) before and after an empowered monster's `GoldDropCheck`, `RuneDropCheck` and `ItemDropCheck`; a noted drop is removed the way the game removes one, by destroying its object on the server.
+
 A champion is `SceneHandler.SpawnMonsterInstance` (the game's runtime spawner) with auto-aggro and the transient flag, at a walkable point the game's own picker finds about seven units from the player, followed by `Monster.ApplyEmpowerment` with one of the game's production empowerments once the game has finished setting the monster up. The name a champion carries exists in the chat lines; the game does not send a monster's object name to players.
 
 If a game update removes a method the mod depends on, the mod switches the affected feature off, or itself off, and writes one line saying so. It never stops the server.
 
-Tested on game build 25350646 with WaygateServer 0.3.8.
+Tested on game build 25350646 with WaygateServer 0.3.9.
 
 ## Build
 
