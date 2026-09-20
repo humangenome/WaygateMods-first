@@ -142,5 +142,23 @@
     "description": "An elite hunt: empowered monsters are several times as common and ordinary monsters can be empowered too, they gain levels, pay more and are announced when they fall; optional named champions come for a random player; monster damage can rise with the player count. Players install nothing.",
     "dependencies": [],
     "revoked": false
+  },
+  {
+    "id": "HumanGenome-HordeNights",
+    "name": "Horde Nights",
+    "version": "1.0.1",
+    "author": "HumanGenome",
+    "side": "server",
+    "game_build": 25350646,
+    "dll": "HordeNights.dll",
+    "dll_sha256": "d5d7f49f599d5f5de176fedaee1e41264d760b7e0bdd0249bc7e2527f26555b6",
+    "sha256": "151d273bf63622f2ca07f75062bb381e75aa3bc3e42377252d11962a30791136",
+    "size": 32616,
+    "url": "https://github.com/HumanGenome/WaygateMods-first/releases/download/HumanGenome-HordeNights-v1.0.1/HumanGenome-HordeNights-1.0.1.zip",
+    "source": "https://github.com/HumanGenome/WaygateMods-first/tree/main/HordeNights",
+    "license": "MIT",
+    "description": "Waves of monsters come for the players every Nth night or when an admin calls one: a warning in chat, wave after wave round the defenders, healing and gold between waves, and a clean-up that removes every monster it made. Players install nothing.",
+    "dependencies": [],
+    "revoked": false
   }
 ]
