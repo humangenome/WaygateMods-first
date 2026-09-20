@@ -35,6 +35,7 @@ Monster health and movement speed are not changed. The game re-reads its health 
 ## What the dials can and cannot do
 
 - **Empowered monsters.** The game only ever empowers certain monster kinds (the ones whose kind name ends in Empowered), each with a chance of 33%. They stand at about one spawn point in ten and at none in the starting areas. The dial multiplies that chance, so 2 makes about two in three of them empowered and 3 makes all of them; ordinary kinds stay ordinary. A monster rolls when it spawns and when it returns from death, so the dial shows on monsters that arrive during the night.
+- **With Corrupted Realm.** Both mods multiply the same 33% chance, so the share is 33% x this dial x Corrupted Realm's `Elites/Chance`, up to every monster that can be empowered (measured with Chance at 1.5: 53% by day, 100% at night with this dial at 2). With Corrupted Realm at its default of 3, nearly all of them are empowered by day already and this dial has nothing left to add. The XP and drop multipliers of the two mods multiply as well.
 - **Special attacks.** The dial makes the cooldown clocks of monster special attacks run that many times as fast (measured: 1.0, 1.5 and 3.0 seconds of cooldown per second at 1, 1.5 and 3). How often a monster actually attacks also follows the game's own combat pace: a mini-boss whose cooldowns ran three times as fast hit a player 15 times in 75 seconds instead of 13.
 - **Larger monsters.** The game draws a monster that carries its large-size effect at one and a half times its size. That size is fixed in the game; it cannot be chosen.
 - **Shields.** The shield is the one the game's own shield spells give: it absorbs damage before health does and runs down to nothing over its time, which here is the time left until dawn. At dawn the mod takes the size and what is left of the shield off again, also when the night was slept away.
@@ -60,7 +61,7 @@ The game keeps its difficulty dials in `DifficultyManager` and reads them on the
 
 If a game update removes a method the mod depends on, the mod switches the affected feature off, or itself off, and writes one line saying so. It never stops the server.
 
-Tested on game build 25350646 with WaygateServer 0.3.10.
+Tested on game build 25350646 with WaygateServer 0.3.10, alone and beside Corrupted Realm 1.0.0.
 
 ## Changes
 
