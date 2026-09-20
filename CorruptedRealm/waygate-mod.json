@@ -5,7 +5,7 @@
   "author": "HumanGenome",
   "side": "server",
   "dll": "CorruptedRealm.dll",
-  "sha256": "826971c344b5898327333bfa6d6bafa57e6ec31a376a7325b04abe93fb9638d0",
+  "sha256": "fb30b115b507338a92e46b8288d43bcda40c8039eafb2abb6647872ff3bc63dd",
   "game_build": 25350646,
   "description": "An elite hunt: empowered monsters are several times as common and ordinary monsters can be empowered too, they gain levels, pay more and are announced when they fall; optional named champions come for a random player; monster damage can rise with the player count. Players install nothing.",
   "dependencies": [],
