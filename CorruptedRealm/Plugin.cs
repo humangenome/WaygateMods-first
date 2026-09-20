@@ -34,7 +34,7 @@ namespace WaygateMods.CorruptedRealm
 		public const string Version = "1.0.0";
 
 		internal static ConfigEntry<float> EliteChance, WildChance, EliteAttackSpeed, EliteArmor, EliteXp, EliteGold, EliteLoot, PerPlayer;
-		internal static ConfigEntry<int> EliteLevels, ChampionEvery, ChampionMaxAlive, ChampionLeaveAfter;
+		internal static ConfigEntry<int> EliteLevels, ChampionEvery, ChampionMaxAlive, ChampionLeaveAfter, DropsAfterMinutes;
 		internal static ConfigEntry<bool> AnnounceKills, AnnounceChampions, Commands;
 		internal static ConfigEntry<string> EliteExtraEffects, WildSkipScenes, ChampionTypes, ChampionSafeScenes, AdminNames;
 		internal static ConfigEntry<string> MsgEliteKill, MsgChampionAppears, MsgChampionSlain, MsgChampionLeaves;
@@ -42,7 +42,7 @@ namespace WaygateMods.CorruptedRealm
 		public override void Load()
 		{
 			EliteChance = Config.Bind("Elites", "Chance", 3f, "How much more often a monster the game lets be empowered spawns empowered. 1 = the game's own chance. 1 to 10, and never past 100%.");
-			WildChance = Config.Bind("Elites", "WildChance", 5f, "Chance in percent that an ordinary monster, one the game never empowers, spawns empowered. 0 = never. Up to 25. Bosses, minibosses, harmless animals and things that do not move are left out.");
+			WildChance = Config.Bind("Elites", "WildChance", 5f, "Chance in percent that an ordinary monster, one the game never empowers, spawns empowered. 0 = never. Up to 25. Bosses, minibosses, monsters tied to the world's story, harmless animals and things that do not move are left out.");
 			WildSkipScenes = Config.Bind("Elites", "WildSkipScenes", "TheLostCaverns", "Areas where ordinary monsters stay ordinary, separated by commas. Names are the game's scene names. The default is the area new characters start in.");
 			EliteLevels = Config.Bind("Elites", "BonusLevel", 3, "Levels an empowered monster gains. 0 to 20.");
 			EliteArmor = Config.Bind("Elites", "Armor", 1.25f, "The game's armor-up effect on an empowered monster. 1 = none. 1 to 2.");
@@ -53,12 +53,14 @@ namespace WaygateMods.CorruptedRealm
 			EliteLoot = Config.Bind("Elites", "Loot", 2f, "Drop chance from an empowered monster, on top of the game's own bonus for them. 1 to 5.");
 
 			ChampionEvery = Config.Bind("Champion", "EveryMinutes", 0, "Every this many minutes a champion comes for a random player. 0 = never. Up to 240. The clock runs only while somebody is connected.");
-			ChampionTypes = Config.Bind("Champion", "Types", "WildwoodWolfAlpha,GoblinBasherT2,GoblinRipperT2", "Monster types a champion can be, separated by commas. Names are the game's MonsterType names.");
+			ChampionTypes = Config.Bind("Champion", "Types", "GoblinBasher,GoblinBasherT2,GoblinRipperT2,CorruptedWildwoodWolf", "Monster types a champion can be, separated by commas. Names are the game's MonsterType names. Bosses, minibosses and monsters tied to the world's story are refused.");
 			ChampionMaxAlive = Config.Bind("Champion", "MaxAlive", 2, "Champions alive at the same time. 1 to 5.");
 			ChampionLeaveAfter = Config.Bind("Champion", "LeaveAfterMinutes", 20, "A champion nobody is fighting leaves after this many minutes. 5 to 120.");
 			ChampionSafeScenes = Config.Bind("Champion", "SafeScenes", "EarlwoodVillage,GuildHall,PlayerBase", "A champion never comes for a player standing in one of these areas. Names are the game's scene names.");
 
 			PerPlayer = Config.Bind("Scaling", "PerPlayer", 0.1f, "Monster damage added for each connected player beyond the first. 0.1 = 10% each. 0 to 0.5. 0 = off.");
+
+			DropsAfterMinutes = Config.Bind("Cleanup", "DropsAfterMinutes", 10, "Loot and gold an empowered monster dropped and nobody picked up is removed after this many minutes. Every drop left on the ground costs the server CPU. 0 = leave it to the game, which removes a drop after 30 minutes. Up to 30.");
 
 			AnnounceKills = Config.Bind("Announce", "EliteKills", true, "A chat line when a player kills an empowered monster.");
 			AnnounceChampions = Config.Bind("Announce", "Champions", true, "Chat lines when a champion appears, dies or leaves.");
@@ -90,11 +92,16 @@ namespace WaygateMods.CorruptedRealm
 				ModKit.Patch(dm, "GetMonsterDamageDealtMultiplier", null, typeof(Dials), null, nameof(Dials.Damage), false, "damage that rises with the player count");
 				ModKit.Patch(typeof(QuestManager), "RegisterMonsterDeath", new[] { typeof(Player), typeof(Monster), typeof(InGameEvent) }, typeof(Realm), null, nameof(Realm.MonsterDeath), false, "kill announcements");
 				ModKit.Patch(typeof(ChatSystem), "SendMessageToServerServerRpc", null, typeof(Realm), nameof(Realm.Chat), null, false, "the /realm and /champion chat commands");
+				Story.Guarded = ModKit.Patch(typeof(Monster), "OnDeath", new[] { typeof(Damage), typeof(bool) }, typeof(Story), nameof(Story.DeathBegins), nameof(Story.Ends), false, "champions (keeping a champion's death out of the world's story)")
+					& ModKit.Patch(typeof(MonsterBehaviour), "ActivateReaction", null, typeof(Story), nameof(Story.ReactionBegins), nameof(Story.Ends), false, "champions (keeping a champion's battle cries out of the world's story)")
+					& ModKit.Patch(typeof(EventsManager), "ActivateEventServerRpc", null, typeof(Story), nameof(Story.Activate), null, false, "champions (keeping them out of the world's story)");
+				Drops.CanTrack = ModKit.Patch(typeof(MonsterUtils), "RuneDropCheck", Type.EmptyTypes, typeof(Drops), nameof(Drops.Before), nameof(Drops.After), false, "clearing up what empowered monsters drop (runes)")
+					& ModKit.Patch(typeof(MonsterUtils), "ItemDropCheck", Type.EmptyTypes, typeof(Drops), nameof(Drops.Before), nameof(Drops.After), false, "clearing up what empowered monsters drop (items)");
 				if (!ModKit.Off)
 				{
 					int every = Mathf.Clamp(ChampionEvery.Value, 0, 240);
 					ModKit.Say("Corrupted Realm " + Version + " is on: empowered monsters are " + Dials.Clamp(EliteChance.Value, 1f, 10f).ToString("0.##", CultureInfo.InvariantCulture) + "x as common" + (Dials.Clamp(WildChance.Value, 0f, 25f) > 0f ? ", " + Dials.Clamp(WildChance.Value, 0f, 25f).ToString("0.##", CultureInfo.InvariantCulture) + "% of ordinary monsters are empowered too" : "") + ", each gains " + Mathf.Clamp(EliteLevels.Value, 0, 20) + " levels"
-						+ (every > 0 ? ", a champion every " + every + " minutes" : ", champions off")
+						+ (every > 0 && Story.Guarded ? ", a champion every " + every + (every == 1 ? " minute" : " minutes") : ", champions off")
 						+ ". Slain on this server so far: " + Realm.Count(State.ElitesSlain, "empowered monster") + ", " + Realm.Count(State.ChampionsSlain, "champion") + ".");
 				}
 			}
@@ -190,6 +197,9 @@ namespace WaygateMods.CorruptedRealm
 		internal static bool IsElite(Monster m, bool payingOut)
 		{
 			if (m == null) return false;
+			// A boss, a miniboss or a monster tied to the world's story is left exactly as the game
+			// made it, empowered or not: no levels, no effects, no extra pay, no kill line.
+			try { if (Kinds.StoryOrBoss(m.MonsterConfiguration)) return false; } catch { return false; }
 			try { if (m.IsEmpowered) return true; } catch { }
 			var k = MarkOf(m);
 			if (k != null && (k.ClearedAt < 0f || Time.realtimeSinceStartup - k.ClearedAt < CorpseSeconds)) return true;
@@ -209,6 +219,7 @@ namespace WaygateMods.CorruptedRealm
 				var m = __instance;
 				if (m == null || !ModKit.OnServer() || !m.IsEmpowered) return;
 				try { if (m.IsPlayerAllied) return; } catch { }
+				try { if (Kinds.StoryOrBoss(m.MonsterConfiguration)) return; } catch { return; }
 				long key = Key(m);
 				Mark k;
 				if (sMarks.TryGetValue(key, out k) && k.ClearedAt < 0f) return;
@@ -323,7 +334,7 @@ namespace WaygateMods.CorruptedRealm
 			if (m.RemainingDefeatTime > 0f || m.IsEngaged.Value) return;
 			if (Champions.Find(m) != null) return;
 			var cfg = m.MonsterConfiguration;
-			if (cfg == null) return;
+			if (cfg == null || Kinds.StoryOrBoss(cfg)) return;
 			var pool = cfg.EmpowermentPool;
 			if (!cfg.CanBeEmpowered || cfg.EmpowermentChance <= 0f || pool == null || pool.Count == 0) { Wild(m, cfg); return; }
 
@@ -361,8 +372,7 @@ namespace WaygateMods.CorruptedRealm
 			int t = (int)cfg.MonsterType; bool ok;
 			if (sWildTypes.TryGetValue(t, out ok)) return ok;
 			string name = cfg.MonsterType.ToString();
-			ok = cfg.DangerLevel != DangerLevel.Boss && cfg.DangerLevel != DangerLevel.MiniBoss
-				&& cfg.XpOnKill > 1 && !cfg.AgentPermanentlyDisabled;
+			ok = !Kinds.StoryOrBoss(cfg) && cfg.XpOnKill > 1 && !cfg.AgentPermanentlyDisabled;
 			foreach (var word in new[] { "Dummy", "GodMode", "Nest", "Heart", "Sleeping", "Fish" }) if (name.IndexOf(word, StringComparison.Ordinal) >= 0) ok = false;
 			sWildTypes[t] = ok;
 			return ok;
@@ -372,6 +382,7 @@ namespace WaygateMods.CorruptedRealm
 		{
 			float wild = Dials.Clamp(CorruptedRealmPlugin.WildChance.Value, 0f, 25f);
 			if (wild <= 0f || !WildType(cfg)) return;
+			try { if (m.GetComponentInChildren<BossInvulnerability>(true) != null) return; } catch { }
 			string scene = ""; try { scene = m.Scene.Value.ToString(); } catch { }
 			foreach (var part in (CorruptedRealmPlugin.WildSkipScenes.Value ?? "").Split(','))
 				if (part.Trim().Length > 0 && string.Equals(part.Trim(), scene, StringComparison.OrdinalIgnoreCase)) return;
@@ -446,8 +457,8 @@ namespace WaygateMods.CorruptedRealm
 		}
 		internal static void XpEnd() { XpForElite = false; }
 
-		internal static void GoldBegin(MonsterUtils __instance) { GoldForElite = Of(__instance); }
-		internal static void GoldEnd() { GoldForElite = false; }
+		internal static void GoldBegin(MonsterUtils __instance) { GoldForElite = Of(__instance); if (GoldForElite) Drops.Begin(); }
+		internal static void GoldEnd() { GoldForElite = false; Drops.After(); }
 		internal static void LootBegin(MonsterUtils __instance) { LootForElite = Of(__instance); }
 		internal static void LootEnd() { LootForElite = false; }
 
@@ -521,9 +532,164 @@ namespace WaygateMods.CorruptedRealm
 		}
 	}
 
+	// What the game ties to the KIND of monster, not to the one it placed: an event when it
+	// dies, boss stages, and the rank that brings story pop-ups and kill credit for "defeat X".
+	// The mod never makes such a monster and never empowers one the game would not.
+	internal static class Kinds
+	{
+		internal static bool StoryOrBoss(MonsterConfiguration cfg)
+		{
+			if (cfg == null) return true;
+			if (cfg.EventOnDeath != InGameEvent.None) return true;
+			if (cfg.DangerLevel == DangerLevel.Boss || cfg.DangerLevel == DangerLevel.MiniBoss) return true;
+			return cfg.MonsterRank == MonsterRank.Boss || cfg.MonsterRank == MonsterRank.MiniBoss;
+		}
+
+		// The kind's own settings, read from the game's prefab for it: nothing is spawned.
+		// found = false when the game has no prefab for the type on this version.
+		internal static MonsterConfiguration Of(MonsterType type, out bool found, out bool bossStages)
+		{
+			found = false; bossStages = false;
+			try
+			{
+				var npm = NetworkPrefabManager.Singleton;
+				var dict = npm != null ? npm.MonsterPrefabs : null;
+				NetworkObject prefab;
+				if (dict == null || !dict.TryGetValue(type, out prefab) || prefab == null) return null;
+				found = true;
+				bossStages = prefab.GetComponentInChildren<BossInvulnerability>(true) != null;
+				var cfg = prefab.GetComponent<MonsterConfiguration>();
+				return cfg != null ? cfg : prefab.GetComponentInChildren<MonsterConfiguration>(true);
+			}
+			catch (Exception e) { ModKit.Dbg("kind " + type + ": " + e.Message); return null; }
+		}
+	}
+
+	// A champion is a monster the mod ADDS, so it must not move the world's story along. The
+	// game starts a story event on behalf of one monster in its death, in one of its reactions
+	// (a monster can call an event in when its health falls) and in a boss's stages. Kinds with
+	// an event on death, boss stages or a boss rank are never champions; for the rest, while
+	// the game runs a champion's death or reaction, its call that starts an event is skipped.
+	// Every other monster, the empowered ones included, does all of that as always: the mod
+	// empowers a world's own monsters in place and changes nothing about how they die.
+	internal static class Story
+	{
+		internal static bool Guarded;
+		// one entry per death or reaction the game is inside of right now (one can cause another)
+		private static readonly List<bool> sInside = new List<bool>();
+		private static readonly HashSet<InGameEvent> sTold = new HashSet<InGameEvent>();
+
+		private static void Begins(NetworkBehaviour on)
+		{
+			bool mine = false;
+			try { mine = !ModKit.Off && on != null && Champions.IsMine(on.NetworkObjectId); } catch { }
+			if (sInside.Count < 64) sInside.Add(mine);
+		}
+
+		internal static void DeathBegins(Monster __instance) { Begins(__instance); }
+		internal static void ReactionBegins(MonsterBehaviour __instance) { Begins(__instance); }
+		internal static void Ends() { if (sInside.Count > 0) sInside.RemoveAt(sInside.Count - 1); }
+
+		// The server's tick is never inside a death: whatever is still on the list is stale.
+		internal static void BetweenFrames() { if (sInside.Count > 0) sInside.Clear(); }
+
+		internal static bool Activate(InGameEvent inGameEvent)
+		{
+			if (ModKit.Off || sInside.Count == 0 || !sInside[sInside.Count - 1]) return true;
+			if (sTold.Add(inGameEvent)) ModKit.Say("A champion tried to start the story event " + inGameEvent + ". It was not started: champions stay out of the world's story.");
+			return false;
+		}
+	}
+
+	// What empowered monsters leave on the ground. The mod raises their drop chance and gold,
+	// the game removes a drop only after 30 minutes, and every drop costs the server CPU for
+	// as long as it lies there. So a drop that appears inside an empowered monster's own drop
+	// checks (the three calls the game's death routine makes: gold, rune, item) is noted, and
+	// what is left of it after Cleanup/DropsAfterMinutes is removed the way the game removes
+	// one. A drop from any other monster is never on the list.
+	internal static class Drops
+	{
+		private sealed class Drop { internal UnityEngine.Object Obj; internal float Due; }
+		internal static bool CanTrack;
+		private static readonly List<Drop> sDrops = new List<Drop>();
+		private static HashSet<int> sBefore;
+		private static float sNextLook;
+		private const int MaxTracked = 2000;
+
+		private static int Minutes { get { return Mathf.Clamp(CorruptedRealmPlugin.DropsAfterMinutes.Value, 0, 30); } }
+
+		private static HashSet<int> Snapshot()
+		{
+			var set = new HashSet<int>();
+			try { var e = SimpleObject.ActiveInstances.GetEnumerator(); while (e.MoveNext()) { var o = e.Current; if (o != null) set.Add(o.GetInstanceID()); } } catch (Exception ex) { ModKit.Dbg("drop list (items): " + ex.Message); }
+			try { var e = RuneObject.ActiveInstances.GetEnumerator(); while (e.MoveNext()) { var o = e.Current; if (o != null) set.Add(o.GetInstanceID()); } } catch (Exception ex) { ModKit.Dbg("drop list (runes): " + ex.Message); }
+			try { var e = GoldDropPickup.ActiveInstances.GetEnumerator(); while (e.MoveNext()) { var o = e.Current; if (o != null) set.Add(o.GetInstanceID()); } } catch (Exception ex) { ModKit.Dbg("drop list (gold): " + ex.Message); }
+			return set;
+		}
+
+		internal static void Begin() { try { sBefore = CanTrack && Minutes > 0 ? Snapshot() : null; } catch { sBefore = null; } }
+
+		// Round the game's rune and item drop checks on a monster (the gold check calls Begin itself).
+		internal static void Before(MonsterUtils __instance)
+		{
+			sBefore = null;
+			if (ModKit.Off) return;
+			try
+			{
+				if (__instance == null || !ModKit.OnServer() || Minutes == 0) return;
+				if (Elites.IsElite(__instance._monster, true)) Begin();
+			}
+			catch (Exception e) { sBefore = null; ModKit.Fail("drop check", e); }
+		}
+
+		internal static void After()
+		{
+			if (sBefore == null) return;
+			var before = sBefore; sBefore = null;
+			try
+			{
+				float due = Time.realtimeSinceStartup + Minutes * 60f; int added = 0;
+				try { var e = SimpleObject.ActiveInstances.GetEnumerator(); while (e.MoveNext()) { var o = e.Current; if (o != null && !before.Contains(o.GetInstanceID())) { Add(o, due); added++; } } } catch { }
+				try { var e = RuneObject.ActiveInstances.GetEnumerator(); while (e.MoveNext()) { var o = e.Current; if (o != null && !before.Contains(o.GetInstanceID())) { Add(o, due); added++; } } } catch { }
+				try { var e = GoldDropPickup.ActiveInstances.GetEnumerator(); while (e.MoveNext()) { var o = e.Current; if (o != null && !before.Contains(o.GetInstanceID())) { Add(o, due); added++; } } } catch { }
+				if (added > 0) ModKit.Dbg("noted " + added + " drop(s) of an empowered monster, " + sDrops.Count + " on the list");
+			}
+			catch (Exception e) { ModKit.Fail("drop check", e); }
+		}
+
+		private static void Add(UnityEngine.Object o, float due) { if (sDrops.Count < MaxTracked) sDrops.Add(new Drop { Obj = o, Due = due }); }
+
+		// The game's own way of taking a drop off the ground, on a pick-up and when its 30
+		// minutes are up, is to destroy the drop's object on the server; the network layer
+		// removes it from every client. The same call is made here.
+		internal static void Tick(float now)
+		{
+			if (sDrops.Count == 0 || now < sNextLook) return;
+			sNextLook = now + 5f;
+			int cleared = 0;
+			for (int i = sDrops.Count - 1; i >= 0; i--)
+			{
+				var d = sDrops[i];
+				if (now < d.Due) continue;
+				sDrops.RemoveAt(i);
+				try
+				{
+					if (d.Obj == null) continue;
+					var c = d.Obj.TryCast<Component>();
+					if (c == null || c.gameObject == null) continue;
+					UnityEngine.Object.Destroy(c.gameObject);
+					cleared++;
+				}
+				catch (Exception e) { ModKit.Dbg("clearing a drop: " + e.Message); }
+			}
+			if (cleared > 0) ModKit.Say("Corrupted Realm cleared " + cleared + (cleared == 1 ? " drop" : " drops") + " of empowered monsters that nobody picked up.");
+		}
+	}
+
 	internal sealed class Champion
 	{
 		internal long Key;
+		internal ulong Id;
 		internal Monster Monster;
 		internal NetworkObject Object;
 		internal string Name = "", Title = "", MonsterName = "", Target = "", Area = "";
@@ -547,6 +713,12 @@ namespace WaygateMods.CorruptedRealm
 
 		internal static int AliveCount { get { return sAlive.Count; } }
 
+		// The network ids of the monsters the mod added, kept two minutes past their end so the
+		// game's death routine, which runs after the kill is credited, still finds them.
+		private static readonly Dictionary<ulong, float> sMine = new Dictionary<ulong, float>();
+		internal static bool IsMine(ulong id) { return sMine.ContainsKey(id); }
+		private static void Ended(Champion c) { try { if (c.Id != 0) sMine[c.Id] = Time.realtimeSinceStartup + 120f; } catch { } }
+
 		internal static Champion Find(Monster m)
 		{
 			if (m == null) return null;
@@ -555,7 +727,7 @@ namespace WaygateMods.CorruptedRealm
 			return null;
 		}
 
-		internal static void Remove(Champion c) { sAlive.Remove(c); }
+		internal static void Remove(Champion c) { sAlive.Remove(c); Ended(c); }
 
 		internal static void Tick(float now, List<Player> players)
 		{
@@ -564,7 +736,7 @@ namespace WaygateMods.CorruptedRealm
 			Tend(now);
 
 			int every = Mathf.Clamp(CorruptedRealmPlugin.ChampionEvery.Value, 0, 240);
-			if (every <= 0) return;
+			if (every <= 0 || !Story.Guarded) return;
 			float full = every * 60f;
 			if (State.NextChampionIn < 0f || State.NextChampionIn > full) { State.NextChampionIn = full; State.Dirty = true; }
 			if (players.Count == 0) return;
@@ -582,12 +754,18 @@ namespace WaygateMods.CorruptedRealm
 		// them up, forget the ones that are gone, and send home the ones nobody is fighting.
 		private static void Tend(float now)
 		{
+			if (sMine.Count > 0)
+			{
+				List<ulong> old = null;
+				foreach (var kv in sMine) if (now >= kv.Value) { if (old == null) old = new List<ulong>(); old.Add(kv.Key); }
+				if (old != null) foreach (var id in old) sMine.Remove(id);
+			}
 			for (int i = sAlive.Count - 1; i >= 0; i--)
 			{
 				var c = sAlive[i];
 				bool gone = false;
 				try { gone = c.Monster == null || c.Object == null || !c.Object.IsSpawned || c.Monster.IsDead(); } catch { gone = true; }
-				if (gone) { sAlive.RemoveAt(i); continue; }
+				if (gone) { sAlive.RemoveAt(i); Ended(c); continue; }
 				try
 				{
 					if (!c.Empowered && now >= c.EmpowerAt)
@@ -608,12 +786,12 @@ namespace WaygateMods.CorruptedRealm
 					if (now - c.SentAt < leave) continue;
 					bool fighting = false; try { fighting = c.Monster.IsEngaged.Value; } catch { }
 					if (fighting) continue;
-					sAlive.RemoveAt(i);
+					sAlive.RemoveAt(i); Ended(c);
 					c.Object.Despawn(true);
 					if (CorruptedRealmPlugin.AnnounceChampions.Value) Realm.Tell(CorruptedRealmPlugin.MsgChampionLeaves.Value, "", "", c.Title, c.MonsterName, "");
 					ModKit.Say("The champion " + c.Title + " left unfought.");
 				}
-				catch (Exception e) { ModKit.Dbg("champion upkeep: " + e.Message); sAlive.RemoveAt(i); }
+				catch (Exception e) { ModKit.Dbg("champion upkeep: " + e.Message); sAlive.RemoveAt(i); Ended(c); }
 			}
 		}
 
@@ -651,6 +829,23 @@ namespace WaygateMods.CorruptedRealm
 			return sHandlers.TryGetValue((int)scene, out found) && found != null ? found : null;
 		}
 
+		// null = this kind can be a champion; else the plain reason it cannot.
+		private static readonly Dictionary<int, string> sRefusals = new Dictionary<int, string>();
+		private static string Refusal(MonsterType type)
+		{
+			string r;
+			if (sRefusals.TryGetValue((int)type, out r)) return r;
+			bool found, stages;
+			var cfg = Kinds.Of(type, out found, out stages);
+			if (!found) r = "This version of the game has no " + Realm.Humanize(type.ToString()) + " to spawn.";
+			else if (cfg == null) r = null; // unread: the monster itself is asked after it is spawned
+			else if (stages || Kinds.StoryOrBoss(cfg)) r = Realm.Humanize(type.ToString()) + " is a boss or is tied to the world's story, so it cannot be a champion.";
+			else r = null;
+			sRefusals[(int)type] = r;
+			if (r != null) ModKit.Dbg("champion kind refused: " + type + " (" + r + ")");
+			return r;
+		}
+
 		private static bool TryType(string name, out MonsterType type)
 		{
 			type = default(MonsterType);
@@ -683,10 +878,13 @@ namespace WaygateMods.CorruptedRealm
 			else
 			{
 				var types = new List<MonsterType>();
-				foreach (var part in (CorruptedRealmPlugin.ChampionTypes.Value ?? "").Split(',')) { MonsterType t; if (TryType(part, out t)) types.Add(t); }
-				if (types.Count == 0) { why = "Champion/Types names no monster type the game knows."; return false; }
+				foreach (var part in (CorruptedRealmPlugin.ChampionTypes.Value ?? "").Split(',')) { MonsterType t; if (TryType(part, out t) && Refusal(t) == null) types.Add(t); }
+				if (types.Count == 0) { why = "Champion/Types names no monster type that can be a champion."; return false; }
 				type = types[sRandom.Next(types.Count)];
 			}
+			if (!Story.Guarded) { why = "Champions are off on this game version."; return false; }
+			string refusal = Refusal(type);
+			if (refusal != null) { why = refusal; return false; }
 			Areas.Scene scene; Vector3 at;
 			try { scene = target.Scene.Value; at = target.transform.position; } catch { why = "That player is not in the world yet."; return false; }
 			if (IsSafe(scene)) { why = ModKit.NameOf(target) + " is in a safe area."; return false; }
@@ -707,8 +905,14 @@ namespace WaygateMods.CorruptedRealm
 			var no = handler.SpawnMonsterInstance(type, spot, name, true, true, InGameEvent.None, null, true);
 			var monster = no != null ? no.GetComponent<Monster>() : null;
 			if (monster == null) { why = "The game did not spawn a " + type + " there."; return false; }
+			// The same question once more, of the monster itself, in case the prefab could not be read.
+			bool story = true;
+			try { story = Kinds.StoryOrBoss(monster.MonsterConfiguration) || monster.GetComponentInChildren<BossInvulnerability>(true) != null; } catch { }
+			if (story) { try { no.Despawn(true); } catch { } why = Realm.Humanize(type.ToString()) + " is a boss or is tied to the world's story, so it cannot be a champion."; return false; }
+			ulong id = 0; try { id = no.NetworkObjectId; } catch { }
+			if (id != 0) sMine[id] = float.MaxValue;
 
-			var c = new Champion { Key = Elites.Key(monster), Monster = monster, Object = no, Name = name, Title = name, Modifier = modifier, SentAt = Time.realtimeSinceStartup };
+			var c = new Champion { Key = Elites.Key(monster), Id = id, Monster = monster, Object = no, Name = name, Title = name, Modifier = modifier, SentAt = Time.realtimeSinceStartup };
 			c.EmpowerAt = c.SentAt + 1.5f;
 			c.MonsterName = Realm.NameOfType(monster, type);
 			c.Target = ModKit.NameOf(target); c.Area = Realm.AreaName(scene);
@@ -732,10 +936,12 @@ namespace WaygateMods.CorruptedRealm
 			try
 			{
 				ModKit.Pump();
+				Story.BetweenFrames();
 				float now = Time.realtimeSinceStartup;
 				if (now < sNextTick) return;
 				sNextTick = now + 1f;
 				if (!ModKit.OnServer()) return;
+				Drops.Tick(now);
 				var players = ModKit.Players();
 				PlayerCount = players.Count;
 				Rolls.Tick(now);
