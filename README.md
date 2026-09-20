@@ -12,6 +12,7 @@ First-party mods for Dimraeth servers run with [WaygateServer](https://github.co
 | [WaygateTravel](WaygateTravel/) | server | `/summon`, `/tpa`, `/home`, `/back` and `/where` for co-op groups |
 | [BountyBoardPlus](BountyBoardPlus/) | server | Bounty boards tuned by the server: new postings on a clock, cooldowns off or shortened, a higher tier ceiling, more postings, `/bounties` in chat |
 | [CorruptedRealm](CorruptedRealm/) | server | More empowered monsters, stronger and better paid, kill lines in chat, optional champions, damage that rises with the player count |
+| [HordeNights](HordeNights/) | server | Waves of monsters come for the players every Nth night or on `/horde start` |
 
 ## Build and package
 
