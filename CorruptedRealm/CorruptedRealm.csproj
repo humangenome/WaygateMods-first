@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>CorruptedRealm</AssemblyName>
+    <RootNamespace>WaygateMods.CorruptedRealm</RootNamespace>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/Kit.cs" Link="Shared/Kit.cs" />
+  </ItemGroup>
+</Project>

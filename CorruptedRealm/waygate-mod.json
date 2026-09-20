@@ -1,0 +1,14 @@
+{
+  "id": "HumanGenome-CorruptedRealm",
+  "name": "Corrupted Realm",
+  "version": "1.0.0",
+  "author": "HumanGenome",
+  "side": "server",
+  "dll": "CorruptedRealm.dll",
+  "sha256": "826971c344b5898327333bfa6d6bafa57e6ec31a376a7325b04abe93fb9638d0",
+  "game_build": 25350646,
+  "description": "An elite hunt: empowered monsters are several times as common and ordinary monsters can be empowered too, they gain levels, pay more and are announced when they fall; optional named champions come for a random player; monster damage can rise with the player count. Players install nothing.",
+  "dependencies": [],
+  "source": "https://github.com/HumanGenome/WaygateMods-first/tree/main/CorruptedRealm",
+  "license": "MIT"
+}

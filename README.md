@@ -10,6 +10,7 @@ First-party mods for Dimraeth servers run with [WaygateServer](https://github.co
 | [Chronicle](Chronicle/) | server | Kills, deaths, bounties and time played per character, `/stats` and `/top` in chat, a digest at dawn |
 | [DarkNights](DarkNights/) | server | Harder nights, and a blood moon every Nth night |
 | [WaygateTravel](WaygateTravel/) | server | `/summon`, `/tpa`, `/home`, `/back` and `/where` for co-op groups |
+| [CorruptedRealm](CorruptedRealm/) | server | More empowered monsters, stronger and better paid, kill lines in chat, optional champions, damage that rises with the player count |
 
 ## Build and package
 
