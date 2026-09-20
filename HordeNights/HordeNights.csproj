@@ -2,10 +2,14 @@
   <PropertyGroup>
     <AssemblyName>HordeNights</AssemblyName>
     <RootNamespace>WaygateMods.HordeNights</RootNamespace>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
+    <!-- the dll must not carry the git commit: the same source has to give the same bytes wherever HEAD is,
+         because a released dll's sha256 is pinned by the registry and by hosting panels -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../Shared/Kit.cs" Link="Shared/Kit.cs" />
+    <Reference Include="Il2CppSystem.Core"><HintPath>$(PackDir)/interop/Il2CppSystem.Core.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.AIModule"><HintPath>$(PackDir)/interop/UnityEngine.AIModule.dll</HintPath><Private>false</Private></Reference>
   </ItemGroup>
 </Project>

@@ -32,7 +32,7 @@ namespace WaygateMods.HordeNights
 	{
 		public const string PluginId = "com.humangenome.waygatemods.hordenights";
 		public const string ModId = "HumanGenome-HordeNights";
-		public const string Version = "1.0.0";
+		public const string Version = "1.0.1";
 
 		internal static ConfigEntry<int> EveryNights, AtHour, WarnSeconds, MinPlayers;
 		internal static ConfigEntry<bool> WithBloodMoon;
@@ -40,7 +40,7 @@ namespace WaygateMods.HordeNights
 		internal static ConfigEntry<int> Waves, MaxAlive, WaveSeconds, RestSeconds, MaxMinutes;
 		internal static ConfigEntry<float> Size, PerExtraPlayer, HealthPerWave, DamagePerWave, SpawnDistance;
 		internal static ConfigEntry<bool> HealBetweenWaves, MonsterLoot;
-		internal static ConfigEntry<int> GoldPerWave, GoldOnVictory;
+		internal static ConfigEntry<int> GoldPerWave, GoldOnVictory, DropsAfterMinutes;
 		internal static ConfigEntry<string> ExcludeAreas, Admins;
 		internal static ConfigEntry<string> MsgWarning, MsgWave, MsgCleared, MsgVictory, MsgWithdraw, MsgOverrun;
 
@@ -70,6 +70,8 @@ namespace WaygateMods.HordeNights
 			GoldPerWave = Config.Bind("Rewards", "GoldPerWave", 40, "Gold dropped beside each defender when a wave is cleared. 0 to 1000.");
 			GoldOnVictory = Config.Bind("Rewards", "GoldOnVictory", 250, "Gold dropped beside each defender when the last wave is cleared. 0 to 5000.");
 
+			DropsAfterMinutes = Config.Bind("Cleanup", "DropsAfterMinutes", 10, "Loot and gold that horde monsters dropped and nobody picked up is removed this many minutes after the horde ends. Every drop left on the ground costs the server CPU. 0 = leave it to the game, which removes a drop after 30 minutes. Up to 30.");
+
 			ExcludeAreas = Config.Bind("Areas", "Exclude", "EarlwoodVillage, GuildHall, PlayerBase", "Areas a horde never comes to, by the game's area names, split by comma.");
 			Admins = Config.Bind("Commands", "Admins", "", "Character names (or character ids) allowed to type /horde start and /horde stop, split by comma. Empty = nobody.");
 
@@ -89,6 +91,16 @@ namespace WaygateMods.HordeNights
 				ModKit.Patch(typeof(TransitionManager), "Update", null, typeof(Horde), null, nameof(Horde.Tick), true, "the server clock");
 				ModKit.Patch(typeof(QuestManager), "RegisterMonsterDeath", new[] { typeof(Player), typeof(Monster), typeof(InGameEvent) }, typeof(Horde), null, nameof(Horde.MonsterDeath), false, "naming the top slayer");
 				ModKit.Patch(typeof(ChatSystem), "SendMessageToServerServerRpc", null, typeof(Horde), nameof(Horde.Chat), null, false, "the /horde chat command");
+				ModKit.Patch(typeof(BaseSpellLibrary), "SpawnMonster", null, typeof(Horde), null, nameof(Horde.SpellSpawn), false, "counting the monsters a horde monster summons");
+				Story.Guarded = ModKit.Patch(typeof(QuestManager), "RegisterMonsterDeath", new[] { typeof(Player), typeof(Monster), typeof(InGameEvent) }, typeof(Story), nameof(Story.QuestCredit), null, false, "keeping a horde leader's death out of the world's quests")
+					& ModKit.Patch(typeof(EventsManager), "RegisterMonsterDeath", new[] { typeof(Player), typeof(Monster), typeof(InGameEvent) }, typeof(Story), nameof(Story.EventCredit), null, false, "keeping horde kills out of the world's events")
+					& ModKit.Patch(typeof(Monster), "OnDeath", new[] { typeof(Damage), typeof(bool) }, typeof(Story), nameof(Story.DeathBegins), nameof(Story.Ends), false, "keeping horde kills out of the world's story")
+					& ModKit.Patch(typeof(MonsterBehaviour), "ActivateReaction", null, typeof(Story), nameof(Story.ReactionBegins), nameof(Story.Ends), false, "keeping a horde monster's battle cries out of the world's story")
+					& ModKit.Patch(typeof(EventsManager), "ActivateEventServerRpc", null, typeof(Story), nameof(Story.Activate), null, false, "keeping horde kills out of the world's story");
+				ModKit.Patch(typeof(BossInvulnerability), "AdvanceStage", null, typeof(Story), nameof(Story.StageBegins), nameof(Story.Ends), false, "keeping a horde boss's stages out of the world's story");
+				Drops.CanTrack = ModKit.Patch(typeof(MonsterUtils), "GoldDropCheck", Type.EmptyTypes, typeof(Drops), nameof(Drops.Before), nameof(Drops.After), false, "clearing up horde loot (gold)")
+					& ModKit.Patch(typeof(MonsterUtils), "RuneDropCheck", Type.EmptyTypes, typeof(Drops), nameof(Drops.Before), nameof(Drops.After), false, "clearing up horde loot (runes)")
+					& ModKit.Patch(typeof(MonsterUtils), "ItemDropCheck", Type.EmptyTypes, typeof(Drops), nameof(Drops.Before), nameof(Drops.After), false, "clearing up horde loot (items)");
 				if (!ModKit.Off)
 				{
 					int every = Mathf.Clamp(EveryNights.Value, 0, 30);
@@ -195,7 +207,8 @@ namespace WaygateMods.HordeNights
 					l.Add(Row("droops", MonsterType.Droop, 3, MonsterType.Drooplet, 3));
 					l.Add(Row("spitters", MonsterType.Droop, 3, MonsterType.DroopSpitter, 2));
 					l.Add(Row("the swarm", MonsterType.DroopSpitter, 3, MonsterType.Droop, 3));
-					l.Add(Row("the monstrous droop", MonsterType.MonstrousDroop, 1, MonsterType.Droop, 4));
+					// no monstrous droop: it is the first quest's boss, with a Steam achievement of its own
+					l.Add(Row("the empowered", MonsterType.DroopEmpowered, 2, MonsterType.DroopSpitterEmpowered, 2, MonsterType.DroopletEmpowered, 4));
 					break;
 				case "Corrupted":
 					l.Add(Row("corrupted droops", MonsterType.CorruptedDroop, 4));
@@ -307,7 +320,9 @@ namespace WaygateMods.HordeNights
 		private static Areas.Scene sScene = Areas.Scene.None;
 		private static string sTheme = "", sTitle = "A horde";
 		private static List<WaveRow> sWaves = new List<WaveRow>();
-		private static int sWave, sMade, sKilled;
+		private static int sWave, sMade, sKilled, sSummoned;
+		private static float sLastDeathAt = -100f;
+		private static readonly List<Tracked> sLate = new List<Tracked>();
 		private static float sPhaseEnds, sHordeEnds, sNoDefendersSince = -1f, sNextSpawn, sNextSlow, sNextFile;
 		private static readonly Queue<MonsterType> sQueue = new Queue<MonsterType>();
 		private static readonly List<Tracked> sAlive = new List<Tracked>();
@@ -329,6 +344,7 @@ namespace WaygateMods.HordeNights
 			try
 			{
 				ModKit.Pump();
+				Story.BetweenFrames();
 				float now = Time.realtimeSinceStartup;
 				if (!ModKit.OnServer()) { if (Running) Forget(); return; }
 				if (Running && now >= sNextSpawn) { sNextSpawn = now + 0.5f; SpawnSome(); }
@@ -338,6 +354,8 @@ namespace WaygateMods.HordeNights
 				if (now >= sNextFile) { sNextFile = now + 2f; ReadCommandFile(); }
 				Clock();
 				if (Running) Step(now);
+				Drops.Tick(now);
+				RemoveLate();
 			}
 			catch (Exception e) { ModKit.Fail("tick", e); }
 		}
@@ -429,7 +447,8 @@ namespace WaygateMods.HordeNights
 			}
 			if (sWaves.Count == 0) { why = "no waves are set up"; return false; }
 			sTitle = Themes.Title(sTheme);
-			sScene = scene; sWave = -1; sMade = 0; sKilled = 0; sNoDefendersSince = -1f;
+			Drops.HordeStarted(Time.realtimeSinceStartup);
+			sScene = scene; sWave = -1; sMade = 0; sKilled = 0; sSummoned = 0; sLastDeathAt = -100f; sNoDefendersSince = -1f;
 			sQueue.Clear(); sSlayers.Clear(); sToldHere.Clear();
 			float now = Time.realtimeSinceStartup;
 			int warn = Mathf.Clamp(HordeNightsPlugin.WarnSeconds.Value, 0, 600);
@@ -495,7 +514,9 @@ namespace WaygateMods.HordeNights
 					if (now >= sPhaseEnds) NextWave(now, Mathf.Max(1, living.Count));
 					return;
 				case Phase.Wave:
-					if (sQueue.Count == 0 && sAlive.Count == 0) { Cleared(now, living); return; }
+					// a dying monster may leave others behind (the monstrous droop bursts into drooplets a moment
+					// after it falls), so a wave is cleared a few seconds after its last death, not at it
+					if (sQueue.Count == 0 && sAlive.Count == 0 && now - sLastDeathAt >= 4f) { Cleared(now, living); return; }
 					if (now >= sPhaseEnds && sWave + 1 < sWaves.Count) { ModKit.Say("Wave " + (sWave + 1) + " still stands (" + sAlive.Count + " left). The next wave arrives anyway."); NextWave(now, Mathf.Max(1, living.Count)); }
 					return;
 			}
@@ -551,8 +572,9 @@ namespace WaygateMods.HordeNights
 			int left = sAlive.Count + sQueue.Count;
 			int removed = RemoveAll();
 			int census = Census(sScene);
+			Drops.HordeEnded(Time.realtimeSinceStartup);
 			if (!string.IsNullOrWhiteSpace(chatLine)) ModKit.Broadcast(Fill(chatLine, 0, "") + chatTail);
-			ModKit.Say("The horde in " + Words(sScene) + " is over: " + plainReason + ". " + sKilled + " of " + sMade + " monsters were killed" + (left > 0 ? ", " + left + " were still to come or standing" : "") + ", " + removed + " removed. The area held " + sCensusBefore + " monsters before the horde and holds " + census + " now." + (TopSlayer().Length > 0 ? " Top slayer: " + TopSlayer() + "." : ""));
+			ModKit.Say("The horde in " + Words(sScene) + " is over: " + plainReason + ". " + sKilled + " of " + sMade + " monsters were killed" + (sSummoned > 0 ? " (" + sSummoned + " of them summoned by horde monsters)" : "") + (left > 0 ? ", " + left + " were still to come or standing" : "") + ", " + removed + " removed. The area held " + sCensusBefore + " monsters before the horde and holds " + census + " now." + (TopSlayer().Length > 0 ? " Top slayer: " + TopSlayer() + "." : ""));
 			Forget();
 		}
 
@@ -585,8 +607,10 @@ namespace WaygateMods.HordeNights
 				if (no == null) { ModKit.Dbg("the game made no " + type); continue; }
 				Monster m = null; try { m = no.GetComponent<Monster>(); } catch { }
 				if (m == null) { try { no.Despawn(true); } catch { } continue; }
+				if (Story.MustLeaveOut(m, type)) { try { no.Despawn(true); } catch { } continue; }
 				var t = new Tracked { No = no, M = m, Type = type, Id = no.NetworkObjectId, LastPos = at };
 				sAlive.Add(t); sMine.Add(t.Id); sMade++;
+				Drops.Owner(t.Id);
 				Hunt(handler, t);
 				ModKit.Dbg("spawned " + type + " id=" + t.Id + " at " + at + " near " + ModKit.NameOf(anchor) + " alive=" + sAlive.Count);
 			}
@@ -735,7 +759,7 @@ namespace WaygateMods.HordeNights
 				var t = sAlive[i]; int s = StateOf(t);
 				if (s == 0) continue;
 				sAlive.RemoveAt(i);
-				if (s == 1) { t.DeadAt = now; sCorpses.Add(t); sKilled++; }
+				if (s == 1) { t.DeadAt = now; sLastDeathAt = now; sCorpses.Add(t); sKilled++; }
 			}
 			for (int i = sCorpses.Count - 1; i >= 0; i--)
 			{
@@ -806,6 +830,41 @@ namespace WaygateMods.HordeNights
 			return n;
 		}
 
+		// Some monsters of the game make others: the monstrous droop spits out drooplets while it
+		// fights and bursts into more when it dies. They come out of the game's spawn spell, not
+		// out of this mod, and would stay in the area for good. A monster that a horde monster's
+		// spell makes joins the horde: it counts for the wave, and the end of the horde removes it.
+		// One that appears after the horde is over is removed at once. A player's own summon is
+		// never touched: the caster has to be a horde monster.
+		internal static void SpellSpawn(BaseSpellLibrary __instance, NetworkObject __result)
+		{
+			if (ModKit.Off) return;
+			try
+			{
+				if (__result == null || __instance == null || !ModKit.OnServer()) return;
+				var caster = __instance._owner;
+				if (caster == null || !Drops.IsOwner(caster.NetworkObjectId)) return;
+				Monster m = null; try { m = __result.GetComponent<Monster>(); } catch { }
+				if (m == null) return;
+				try { if (m.IsPlayerAllied) return; } catch { }
+				var type = MonsterType.Drooplet; try { var cfg = m.MonsterConfiguration; if (cfg != null) type = cfg.MonsterType; } catch { }
+				var t = new Tracked { No = __result, M = m, Type = type, Id = __result.NetworkObjectId, LastPos = m.transform.position };
+				Drops.Owner(t.Id);
+				if (Running) { sAlive.Add(t); sMine.Add(t.Id); sMade++; sSummoned++; ModKit.Dbg("a horde monster summoned id=" + t.Id + ", alive=" + sAlive.Count); }
+				else { sLate.Add(t); ModKit.Dbg("a dead horde monster left id=" + t.Id + " behind after the horde"); }
+			}
+			catch (Exception e) { ModKit.Fail("summon", e); }
+		}
+
+		private static void RemoveLate()
+		{
+			if (sLate.Count == 0) return;
+			int n = 0;
+			foreach (var t in sLate) if (Remove(t)) n++;
+			sLate.Clear();
+			if (n > 0) ModKit.Say("Horde Nights removed " + n + (n == 1 ? " monster" : " monsters") + " that a dead horde monster left behind.");
+		}
+
 		// After the game's own kill credit: who killed a horde monster.
 		internal static void MonsterDeath(Player __0, Monster __1)
 		{
@@ -840,8 +899,9 @@ namespace WaygateMods.HordeNights
 				float a = UnityEngine.Random.value * Mathf.PI * 2f;
 				var at = new Vector2(pos.x + Mathf.Cos(a) * 1.2f, pos.y + Mathf.Sin(a) * 1.2f);
 				var stage = rpc.__rpc_exec_stage;
+				Drops.BeforeOwn();
 				try { rpc.__rpc_exec_stage = NetworkBehaviour.__RpcExecStage.Server; rpc.AddGoldToWorldServerRpc(amount, sScene, at, 0UL, false); }
-				finally { rpc.__rpc_exec_stage = stage; }
+				finally { rpc.__rpc_exec_stage = stage; Drops.AfterOwn(); }
 				return true;
 			}
 			catch (Exception e) { ModKit.Dbg("gold drop: " + e.Message); return false; }
@@ -954,6 +1014,206 @@ namespace WaygateMods.HordeNights
 				string why;
 				if (!Start(scene, words.Length > 1 ? words[1] : "", "the command file", out why)) ModKit.Say("Command file: no horde, " + why + ".");
 			}
+		}
+	}
+
+	// What horde monsters leave on the ground. The game removes a drop after 30 minutes and
+	// every drop costs the server CPU for as long as it lies there, so the mod notes the
+	// drops its own monsters (and its own gold rewards) made and removes what is left of them
+	// some minutes after the horde ends. A drop from anything else is never on the list: a
+	// drop is noted only when it appears inside a horde monster's own drop check, the three
+	// calls the game's death routine makes on that monster (gold, rune, item).
+	internal static class Drops
+	{
+		private sealed class Drop { internal UnityEngine.Object Obj; internal int Serial; }
+
+		internal static bool CanTrack;
+		private static readonly HashSet<ulong> sOwners = new HashSet<ulong>();
+		private static readonly List<Drop> sDrops = new List<Drop>();
+		private static readonly List<KeyValuePair<int, float>> sDue = new List<KeyValuePair<int, float>>();
+		private static HashSet<int> sBefore;
+		private static int sSerial;
+		private static float sOwnersExpire = -1f;
+		private const int MaxTracked = 3000;
+
+		internal static void HordeStarted(float now)
+		{
+			sSerial++;
+			sOwners.Clear(); sOwnersExpire = -1f;
+		}
+
+		internal static void Owner(ulong monsterId) { sOwners.Add(monsterId); }
+		internal static bool IsOwner(ulong monsterId) { return sOwners.Contains(monsterId); }
+
+		// The last monster's drop check runs a few seconds after its death, which is after the
+		// horde has ended, so the owner list outlives the horde by a minute.
+		internal static void HordeEnded(float now)
+		{
+			sOwnersExpire = now + 60f;
+			int minutes = Mathf.Clamp(HordeNightsPlugin.DropsAfterMinutes.Value, 0, 30);
+			if (minutes > 0 && CanTrack) sDue.Add(new KeyValuePair<int, float>(sSerial, now + minutes * 60f));
+		}
+
+		private static HashSet<int> Snapshot()
+		{
+			var set = new HashSet<int>();
+			try { var e = SimpleObject.ActiveInstances.GetEnumerator(); while (e.MoveNext()) { var o = e.Current; if (o != null) set.Add(o.GetInstanceID()); } } catch (Exception ex) { ModKit.Dbg("drop list (items): " + ex.Message); }
+			try { var e = RuneObject.ActiveInstances.GetEnumerator(); while (e.MoveNext()) { var o = e.Current; if (o != null) set.Add(o.GetInstanceID()); } } catch (Exception ex) { ModKit.Dbg("drop list (runes): " + ex.Message); }
+			try { var e = GoldDropPickup.ActiveInstances.GetEnumerator(); while (e.MoveNext()) { var o = e.Current; if (o != null) set.Add(o.GetInstanceID()); } } catch (Exception ex) { ModKit.Dbg("drop list (gold): " + ex.Message); }
+			return set;
+		}
+
+		private static void NoteNew()
+		{
+			if (sBefore == null) return;
+			var before = sBefore; sBefore = null;
+			int added = 0;
+			try { var e = SimpleObject.ActiveInstances.GetEnumerator(); while (e.MoveNext()) { var o = e.Current; if (o != null && !before.Contains(o.GetInstanceID())) { Add(o); added++; } } } catch { }
+			try { var e = RuneObject.ActiveInstances.GetEnumerator(); while (e.MoveNext()) { var o = e.Current; if (o != null && !before.Contains(o.GetInstanceID())) { Add(o); added++; } } } catch { }
+			try { var e = GoldDropPickup.ActiveInstances.GetEnumerator(); while (e.MoveNext()) { var o = e.Current; if (o != null && !before.Contains(o.GetInstanceID())) { Add(o); added++; } } } catch { }
+			if (added > 0) ModKit.Dbg("noted " + added + " drop(s) of horde " + sSerial + ", " + sDrops.Count + " on the list");
+		}
+
+		private static void Add(UnityEngine.Object o) { if (sDrops.Count < MaxTracked) sDrops.Add(new Drop { Obj = o, Serial = sSerial }); }
+
+		// Round one of the game's three drop checks on a monster.
+		internal static void Before(MonsterUtils __instance)
+		{
+			if (ModKit.Off) return;
+			try
+			{
+				sBefore = null;
+				if (__instance == null || !ModKit.OnServer()) return;
+				if (Mathf.Clamp(HordeNightsPlugin.DropsAfterMinutes.Value, 0, 30) == 0) return;
+				if (!sOwners.Contains(__instance.NetworkObjectId)) return;
+				sBefore = Snapshot();
+			}
+			catch (Exception e) { sBefore = null; ModKit.Fail("drop check", e); }
+		}
+
+		internal static void After() { try { NoteNew(); } catch (Exception e) { sBefore = null; ModKit.Fail("drop check", e); } }
+
+		// Round the mod's own gold reward.
+		internal static void BeforeOwn() { try { sBefore = CanTrack && Mathf.Clamp(HordeNightsPlugin.DropsAfterMinutes.Value, 0, 30) > 0 ? Snapshot() : null; } catch { sBefore = null; } }
+		internal static void AfterOwn() { try { NoteNew(); } catch { sBefore = null; } }
+
+		internal static void Tick(float now)
+		{
+			if (sOwnersExpire > 0f && now >= sOwnersExpire) { sOwners.Clear(); sOwnersExpire = -1f; }
+			for (int i = sDue.Count - 1; i >= 0; i--)
+			{
+				if (now < sDue[i].Value) continue;
+				int serial = sDue[i].Key; sDue.RemoveAt(i);
+				Clear(serial);
+			}
+		}
+
+		// The game's own way of taking a drop off the ground, on a pick-up and when its 30
+		// minutes are up, is to destroy the drop's object on the server; the network layer
+		// removes it from every client. The same call is made here.
+		private static void Clear(int serial)
+		{
+			int cleared = 0, gone = 0;
+			for (int i = sDrops.Count - 1; i >= 0; i--)
+			{
+				var d = sDrops[i];
+				if (d.Serial != serial) continue;
+				sDrops.RemoveAt(i);
+				try
+				{
+					if (d.Obj == null) { gone++; continue; }
+					var c = d.Obj.TryCast<Component>();
+					if (c == null || c.gameObject == null) { gone++; continue; }
+					UnityEngine.Object.Destroy(c.gameObject);
+					cleared++;
+				}
+				catch (Exception e) { ModKit.Dbg("clearing a drop: " + e.Message); gone++; }
+			}
+			if (cleared > 0 || gone > 0) ModKit.Say("Horde Nights cleared " + cleared + (cleared == 1 ? " drop" : " drops") + " nobody picked up (" + gone + " had been taken or had gone).");
+		}
+	}
+
+	// A horde must not move a world's story along, and the game ties its story to the KIND of
+	// monster, not to the one the story placed. Seen on a fresh world: the horde's copy of the
+	// monstrous droop, the first quest's boss, called the camp invasion in when its health fell,
+	// exactly as the real one does, and the invasion's monsters appeared at the camp. So:
+	//   - while the game runs a horde monster's death, one of its reactions or one of its boss
+	//     stages, its call that starts a story event is skipped
+	//   - the death of a horde LEADER (a monster the game ranks mini-boss or boss) gives no
+	//     quest credit; ordinary horde monsters count for "slay N of X" steps like any other
+	//   - no horde monster's death is reported to the game's events
+	// Every other monster does all of that as always. When the game version does not allow
+	// these guards, leaders and monsters with a story event are left out of the horde.
+	internal static class Story
+	{
+		internal static bool Guarded;
+		// one entry per death the game is inside of right now (a death can cause another)
+		private static readonly List<bool> sDying = new List<bool>();
+		private static readonly HashSet<MonsterType> sToldLeftOut = new HashSet<MonsterType>();
+		private static readonly HashSet<InGameEvent> sTold = new HashSet<InGameEvent>();
+
+		private static void Begins(NetworkBehaviour on)
+		{
+			bool mine = false;
+			try { mine = !ModKit.Off && on != null && Drops.IsOwner(on.NetworkObjectId); } catch { }
+			if (sDying.Count < 64) sDying.Add(mine);
+		}
+
+		// The three places where the game starts a story event on behalf of ONE monster: its
+		// death, one of its reactions (the monstrous droop calls the camp invasion in when its
+		// health falls), and a boss's invulnerability stage.
+		internal static void DeathBegins(Monster __instance) { Begins(__instance); }
+		internal static void ReactionBegins(MonsterBehaviour __instance) { Begins(__instance); }
+		internal static void StageBegins(BossInvulnerability __instance) { Begins(__instance); }
+		internal static void Ends() { if (sDying.Count > 0) sDying.RemoveAt(sDying.Count - 1); }
+
+		// The server's tick is never inside a death: whatever is still on the list is stale.
+		internal static void BetweenFrames() { if (sDying.Count > 0) sDying.Clear(); }
+
+		internal static bool Activate(InGameEvent inGameEvent)
+		{
+			if (ModKit.Off || sDying.Count == 0 || !sDying[sDying.Count - 1]) return true;
+			if (sTold.Add(inGameEvent)) ModKit.Say("A horde monster tried to start the story event " + inGameEvent + ". It was not started: hordes stay out of the world's story.");
+			return false;
+		}
+
+		private static bool IsLeader(Monster m)
+		{
+			try { var cfg = m.MonsterConfiguration; return cfg != null && (cfg.DangerLevel == DangerLevel.MiniBoss || cfg.DangerLevel == DangerLevel.Boss); } catch { return false; }
+		}
+
+		// false = the game's quest bookkeeping is skipped for this death
+		internal static bool QuestCredit(Monster __1)
+		{
+			if (ModKit.Off) return true;
+			try
+			{
+				if (__1 == null || !Drops.IsOwner(__1.NetworkObjectId) || !IsLeader(__1)) return true;
+				ModKit.Dbg("a horde leader's death (" + __1.NetworkObjectId + ") was kept out of the quests");
+				return false;
+			}
+			catch (Exception e) { ModKit.Fail("quest credit", e); return true; }
+		}
+
+		// false = the game's event bookkeeping is skipped for this death
+		internal static bool EventCredit(Monster __1)
+		{
+			if (ModKit.Off) return true;
+			try { return __1 == null || !Drops.IsOwner(__1.NetworkObjectId); }
+			catch (Exception e) { ModKit.Fail("event credit", e); return true; }
+		}
+
+		internal static bool MustLeaveOut(Monster m, MonsterType type)
+		{
+			try
+			{
+				if (Guarded) return false;
+				var cfg = m.MonsterConfiguration;
+				if (cfg == null || (cfg.EventOnDeath == InGameEvent.None && !IsLeader(m))) return false;
+				if (sToldLeftOut.Add(type)) ModKit.Say("Horde Nights leaves " + type + " out of hordes on this game version: its death would move the world's story along.");
+				return true;
+			}
+			catch { return false; }
 		}
 	}
 }
