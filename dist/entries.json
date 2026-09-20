@@ -124,5 +124,23 @@
     "description": "The game's bounty boards, tuned by the server: new postings on a real-time clock, cooldowns off or shortened, a higher tier ceiling, more postings per board, chat lines for unlocks and boss kills, /bounties in chat. Players install nothing.",
     "dependencies": [],
     "revoked": false
+  },
+  {
+    "id": "HumanGenome-CorruptedRealm",
+    "name": "Corrupted Realm",
+    "version": "1.0.0",
+    "author": "HumanGenome",
+    "side": "server",
+    "game_build": 25350646,
+    "dll": "CorruptedRealm.dll",
+    "dll_sha256": "fb30b115b507338a92e46b8288d43bcda40c8039eafb2abb6647872ff3bc63dd",
+    "sha256": "285f2ff429424b7008ed5f7bafe9ed129971757d1b0513689f8945008592096a",
+    "size": 31146,
+    "url": "https://github.com/HumanGenome/WaygateMods-first/releases/download/HumanGenome-CorruptedRealm-v1.0.0/HumanGenome-CorruptedRealm-1.0.0.zip",
+    "source": "https://github.com/HumanGenome/WaygateMods-first/tree/main/CorruptedRealm",
+    "license": "MIT",
+    "description": "An elite hunt: empowered monsters are several times as common and ordinary monsters can be empowered too, they gain levels, pay more and are announced when they fall; optional named champions come for a random player; monster damage can rise with the player count. Players install nothing.",
+    "dependencies": [],
+    "revoked": false
   }
 ]

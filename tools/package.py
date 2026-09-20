@@ -9,7 +9,7 @@ the registry entries (registry.json shape) for the built zips.
 import argparse, hashlib, json, os, subprocess, sys, zipfile, io
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODS = ["ServerMultipliers", "MotdAnnounce", "ClientHud", "Chronicle", "DarkNights", "WaygateTravel", "BountyBoardPlus"]
+MODS = ["ServerMultipliers", "MotdAnnounce", "ClientHud", "Chronicle", "DarkNights", "WaygateTravel", "BountyBoardPlus", "CorruptedRealm"]
 FIXED = (2026, 1, 1, 0, 0, 0)
 
 def sha256(path):
