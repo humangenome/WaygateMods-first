@@ -17,8 +17,8 @@ namespace WaygateMods.DarkNights
 	// From dusk to dawn the server scales the game's own difficulty dials at the point where
 	// it reads them: monster damage, how fast monster specials come back, how many monsters
 	// spawn empowered, and what kills pay. On a blood moon the dials go up again, the weather
-	// turns to storm, every dead monster returns at dusk, monsters that spawn that night are
-	// larger and shielded, and nobody can sleep through it.
+	// turns to storm, every dead monster returns at dusk, monsters that spawn or return that
+	// night are larger and carry a shield until dawn, and nobody can sleep through it.
 	//
 	// Server-side only. Nothing is written to the world or to a character: the dials are
 	// multiplied per call, so with the mod removed the game reads its own values again.
@@ -30,11 +30,11 @@ namespace WaygateMods.DarkNights
 	{
 		public const string PluginId = "com.humangenome.waygatemods.darknights";
 		public const string ModId = "HumanGenome-DarkNights";
-		public const string Version = "1.0.0";
+		public const string Version = "1.0.1";
 
 		internal static ConfigEntry<float> NightDamage, NightCooldowns, NightElites, NightXp, NightLoot;
-		internal static ConfigEntry<int> BloodEvery, WarnGameMinutes;
-		internal static ConfigEntry<float> BloodDamage, BloodCooldowns, BloodElites, BloodXp, BloodLoot, GiantSize;
+		internal static ConfigEntry<int> BloodEvery, WarnGameMinutes, ShieldPercent;
+		internal static ConfigEntry<float> BloodDamage, BloodCooldowns, BloodElites, BloodXp, BloodLoot;
 		internal static ConfigEntry<bool> BloodStorm, BloodRespawn, BloodGiants, BloodShield, BloodBlockSleep;
 		internal static ConfigEntry<bool> AnnounceNights;
 		internal static ConfigEntry<string> MsgDusk, MsgDawn, MsgWarn, MsgRise, MsgPass, MsgNoSleep;
@@ -43,7 +43,7 @@ namespace WaygateMods.DarkNights
 		{
 			NightDamage = Config.Bind("Night", "Damage", 1.5f, "Damage monsters deal at night. 1 = the game's own value. 1 to 5.");
 			NightCooldowns = Config.Bind("Night", "Cooldowns", 1.25f, "How fast monster special attacks come back at night. 1 to 3.");
-			NightElites = Config.Bind("Night", "Elites", 2f, "How much more often a monster spawns empowered at night. 1 to 10.");
+			NightElites = Config.Bind("Night", "Elites", 2f, "How much more often a monster spawns empowered at night. Only the kinds the game can empower (their own chance is 33%, so 3 empowers every one of them). 1 to 3.");
 			NightXp = Config.Bind("Night", "XP", 1.25f, "XP from kills at night. 1 to 5.");
 			NightLoot = Config.Bind("Night", "Loot", 1.25f, "Drop chance and gold at night. 1 to 5.");
 			AnnounceNights = Config.Bind("Night", "Announce", true, "A chat line at dusk and at dawn on ordinary nights.");
@@ -51,14 +51,14 @@ namespace WaygateMods.DarkNights
 			BloodEvery = Config.Bind("BloodMoon", "EveryNights", 7, "Every Nth night is a blood moon. 0 = never.");
 			BloodDamage = Config.Bind("BloodMoon", "Damage", 2f, "Damage monsters deal under a blood moon. 1 to 5.");
 			BloodCooldowns = Config.Bind("BloodMoon", "Cooldowns", 1.5f, "How fast monster special attacks come back under a blood moon. 1 to 3.");
-			BloodElites = Config.Bind("BloodMoon", "Elites", 4f, "How much more often a monster spawns empowered under a blood moon. 1 to 10.");
+			BloodElites = Config.Bind("BloodMoon", "Elites", 3f, "How much more often a monster spawns empowered under a blood moon. Only the kinds the game can empower. 1 to 3.");
 			BloodXp = Config.Bind("BloodMoon", "XP", 2f, "XP from kills under a blood moon. 1 to 5.");
 			BloodLoot = Config.Bind("BloodMoon", "Loot", 2f, "Drop chance and gold under a blood moon. 1 to 5.");
 			BloodStorm = Config.Bind("BloodMoon", "Storm", true, "Storm weather everywhere until dawn.");
 			BloodRespawn = Config.Bind("BloodMoon", "RespawnAll", true, "Every dead monster returns when the blood moon rises.");
-			BloodGiants = Config.Bind("BloodMoon", "Giants", true, "Monsters that spawn under a blood moon are larger.");
-			GiantSize = Config.Bind("BloodMoon", "GiantSize", 1.4f, "How much larger. 1.1 to 2.");
-			BloodShield = Config.Bind("BloodMoon", "Shield", true, "Monsters that spawn under a blood moon start with a shield.");
+			BloodGiants = Config.Bind("BloodMoon", "Giants", true, "Monsters that spawn or return under a blood moon are larger until dawn. The game draws a larger monster at one and a half times its size; the size cannot be chosen.");
+			BloodShield = Config.Bind("BloodMoon", "Shield", true, "Monsters that spawn or return under a blood moon carry a shield. It fades away by dawn.");
+			ShieldPercent = Config.Bind("BloodMoon", "ShieldPercent", 50, "How strong that shield is, as a share of the monster's health. 10 to 200.");
 			BloodBlockSleep = Config.Bind("BloodMoon", "BlockSleep", true, "Nobody can sleep the blood moon away.");
 			WarnGameMinutes = Config.Bind("BloodMoon", "WarnGameMinutes", 60, "Game minutes of warning before a blood moon rises. 0 = no warning. Up to 180.");
 
@@ -79,11 +79,15 @@ namespace WaygateMods.DarkNights
 				var dm = typeof(DifficultyManager);
 				ModKit.Patch(dm, "GetMonsterDamageDealtMultiplier", null, typeof(Dials), null, nameof(Dials.Damage), false, "night damage");
 				ModKit.Patch(dm, "GetCooldownRecoveryMultiplier", null, typeof(Dials), null, nameof(Dials.Cooldowns), false, "night aggression");
-				ModKit.Patch(dm, "GetEmpowermentChanceMultiplier", null, typeof(Dials), null, nameof(Dials.Elites), false, "more elites at night");
+				// The game's empowerment roll reads its chance dial straight off the object DialsFor
+				// returns (its own getter for that dial has no caller), so that is where the dial goes.
+				ModKit.Patch(dm, "DialsFor", new[] { typeof(MonsterConfiguration) }, typeof(Dials), null, nameof(Dials.Resolved), false, "more empowered monsters at night");
 				ModKit.Patch(dm, "GetXPMultiplier", null, typeof(Dials), null, nameof(Dials.Xp), false, "night XP");
 				ModKit.Patch(dm, "GetGoldMultiplier", null, typeof(Dials), null, nameof(Dials.Loot), false, "night gold");
 				ModKit.Patch(dm, "GetLootChanceMultiplier", null, typeof(Dials), null, nameof(Dials.Loot), false, "night loot");
-				ModKit.Patch(dm, "GetExtraStartingEffects", null, typeof(Dials), null, nameof(Dials.StartingEffects), false, "blood moon giants and shields");
+				// The game clears a monster's empowerment right before it rolls for one, at set-up and
+				// on its return from death: the cue for a monster that has just entered the night.
+				ModKit.Patch(typeof(Monster), "ClearEmpowerment", null, typeof(Dress), nameof(Dress.Entering), null, false, "blood moon giants and shields");
 				ModKit.Patch(typeof(SleepManager), "RegisterSleepServerRpc", null, typeof(Night), nameof(Night.Sleep), null, false, "the blood moon sleep rule");
 				if (!ModKit.Off)
 				{
@@ -162,6 +166,8 @@ namespace WaygateMods.DarkNights
 				if (!ModKit.OnServer()) return;
 				bool night; GameTime time;
 				if (!ModKit.TryClock(out night, out time)) return;
+				Clock.Sample(now, time);
+				Dress.Tick(now, time);
 
 				if (!sClockKnown)
 				{
@@ -203,7 +209,7 @@ namespace WaygateMods.DarkNights
 
 		private static void Dusk()
 		{
-			IsNight = true; sWarned = false;
+			IsNight = true; sWarned = false; Dials.ForgetCopies(); Dress.Dressed = 0;
 			State.Nights++;
 			IsBloodMoon = false;
 			int every = Mathf.Max(0, DarkNightsPlugin.BloodEvery.Value);
@@ -231,10 +237,11 @@ namespace WaygateMods.DarkNights
 		private static void Dawn()
 		{
 			bool wasBlood = IsBloodMoon;
-			IsNight = false; IsBloodMoon = false;
+			IsNight = false; IsBloodMoon = false; Dials.ForgetCopies();
 			State.InNight = false; State.InBloodMoon = false; State.Save();
 			if (wasBlood)
 			{
+				Dress.Dawn();
 				RestoreWeather();
 				Tell(DarkNightsPlugin.MsgPass.Value);
 				ModKit.Say("The blood moon has passed.");
@@ -332,7 +339,7 @@ namespace WaygateMods.DarkNights
 			catch (Exception e) { ModKit.Fail(what, e); }
 		}
 
-		// One Debug line per dial every 30 s, for whoever is proving the mod in a lab.
+		// One Debug line per dial every 30 s, for whoever reads the log with Debug enabled.
 		private static readonly Dictionary<string, float> sTraced = new Dictionary<string, float>();
 		private static void Trace(string what, float was, float now)
 		{
@@ -344,36 +351,178 @@ namespace WaygateMods.DarkNights
 
 		internal static void Damage(ref float __result) { Scale(ref __result, DarkNightsPlugin.NightDamage, DarkNightsPlugin.BloodDamage, 5f, "damage"); }
 		internal static void Cooldowns(ref float __result) { Scale(ref __result, DarkNightsPlugin.NightCooldowns, DarkNightsPlugin.BloodCooldowns, 3f, "cooldowns"); }
-		internal static void Elites(ref float __result) { Scale(ref __result, DarkNightsPlugin.NightElites, DarkNightsPlugin.BloodElites, 10f, "elites"); }
-		internal static void Xp(ref float __result) { Scale(ref __result, DarkNightsPlugin.NightXp, DarkNightsPlugin.BloodXp, 5f, "xp"); }
-		internal static void Loot(ref float __result) { Scale(ref __result, DarkNightsPlugin.NightLoot, DarkNightsPlugin.BloodLoot, 5f, "loot"); }
 
-		// Monsters that spawn under a blood moon carry extra starting effects. The game hands
-		// back the list that belongs to its difficulty settings, so that list is never touched:
-		// a new list is returned with the game's entries first.
-		internal static void StartingEffects(ref Il2CppSystem.Collections.Generic.List<MonsterStartingEffect> __result)
+		// More empowered monsters. The game keeps one shared set of dials per monster kind and
+		// its roll reads the chance straight off that object, so the object is never edited: at
+		// night the roll is handed a copy whose chance is scaled. Every other value in the copy is
+		// the game's own, so the other dials (each scaled where the game reads it) are not applied
+		// twice. Only kinds the game can empower have a chance to scale.
+		private sealed class Copy { internal DifficultyManager.ResolvedDials Dials; internal float Factor, GameChance; }
+		private static readonly Dictionary<IntPtr, Copy> sCopies = new Dictionary<IntPtr, Copy>();
+
+		internal static void ForgetCopies() { sCopies.Clear(); }
+
+		internal static void Resolved(ref DifficultyManager.ResolvedDials __result)
 		{
 			if (ModKit.Off) return;
 			try
 			{
-				if (!Night.IsBloodMoon || !ModKit.OnServer()) return;
-				bool giants = DarkNightsPlugin.BloodGiants.Value, shield = DarkNightsPlugin.BloodShield.Value;
-				if (!giants && !shield) return;
-				var list = new Il2CppSystem.Collections.Generic.List<MonsterStartingEffect>();
-				if (__result != null) for (int i = 0; i < __result.Count; i++) list.Add(__result[i]);
-				if (giants) list.Add(New(Effect.LargeSize, Mathf.Clamp(DarkNightsPlugin.GiantSize.Value, 1.1f, 2f)));
-				if (shield) list.Add(New(Effect.Shield, 0.5f));
-				__result = list;
-				Trace("spawn effects", 0f, list.Count);
+				if (__result == null || !Night.IsNight) return;
+				float k = Pick(DarkNightsPlugin.NightElites, DarkNightsPlugin.BloodElites, 3f);
+				if (k == 1f || !ModKit.OnServer()) return;
+				float game = __result.EmpowermentChanceMultiplier;
+				Copy c;
+				if (!sCopies.TryGetValue(__result.Pointer, out c) || c.Factor != k || c.GameChance != game)
+				{
+					if (sCopies.Count > 128) sCopies.Clear();
+					var clone = __result.MemberwiseClone().Cast<DifficultyManager.ResolvedDials>();
+					clone.EmpowermentChanceMultiplier = game * k;
+					c = new Copy { Dials = clone, Factor = k, GameChance = game };
+					sCopies[__result.Pointer] = c;
+				}
+				__result = c.Dials;
+				Trace("elites", game, game * k);
 			}
-			catch (Exception e) { ModKit.Fail("starting effects", e); }
+			catch (Exception e) { ModKit.Fail("elites", e); }
+		}
+		internal static void Xp(ref float __result) { Scale(ref __result, DarkNightsPlugin.NightXp, DarkNightsPlugin.BloodXp, 5f, "xp"); }
+		internal static void Loot(ref float __result) { Scale(ref __result, DarkNightsPlugin.NightLoot, DarkNightsPlugin.BloodLoot, 5f, "loot"); }
+
+	}
+
+	// Monsters that enter a blood moon night (spawned, or back from death) are dressed for it a
+	// moment later: larger, and carrying a shield. Both are ordinary game effects added the way
+	// the game adds them, and both end at dawn by their own clocks, so nothing has to be undone.
+	//
+	// The shield is the effect the game's own shield spells use (a shield that runs down over
+	// its time): the game writes the monster's shield from it, amount x time left / time. The
+	// plain Shield effect does not set a shield, and the run-down effect without an end gives a
+	// shield that is not a number, so the time is always finite here.
+	internal static class Dress
+	{
+		private sealed class Due { internal Monster M; internal float At; }
+		private static readonly Dictionary<ulong, Due> sDue = new Dictionary<ulong, Due>();
+		private static readonly List<ulong> sReady = new List<ulong>();
+		internal static long Dressed;
+		private static readonly List<Monster> sWorn = new List<Monster>();
+
+		// Dawn: what the blood moon put on comes off, also when the night was cut short (slept
+		// away, or the clock was set), so "until dawn" holds whatever the effects' own clocks say.
+		internal static void Dawn()
+		{
+			int off = 0;
+			foreach (var m in sWorn)
+			{
+				try
+				{
+					if (m == null || !m.IsSpawned || m.IsDead()) continue;
+					var fx = m.GetComponent<Effects>(); if (fx == null) continue;
+					bool any = false;
+					if (Effects.IsEffectOnObject(m, Effect.ShieldDownOverTime)) { fx.RemoveEffectFromObject(Effect.ShieldDownOverTime, (Spell)0); any = true; }
+					if (Effects.IsEffectOnObject(m, Effect.LargeSize)) { fx.RemoveEffectFromObject(Effect.LargeSize, (Spell)0); any = true; }
+					if (any) off++;
+				}
+				catch (Exception e) { ModKit.Dbg("undressing a monster: " + e.Message); }
+			}
+			if (off > 0) ModKit.Dbg("dawn: the blood moon's size and shield taken off " + off + " monsters");
+			sWorn.Clear(); sDue.Clear();
 		}
 
-		private static MonsterStartingEffect New(Effect effect, float multiplier)
+		internal static void Entering(Monster __instance)
 		{
-			var e = new MonsterStartingEffect();
-			e.Effect = effect; e.Duration = 0f; e.Multiplier = multiplier; e.Additive = 0f;
-			return e;
+			if (ModKit.Off) return;
+			try
+			{
+				if (__instance == null || !Night.IsBloodMoon || !ModKit.OnServer()) return;
+				if (!DarkNightsPlugin.BloodGiants.Value && !DarkNightsPlugin.BloodShield.Value) return;
+				if (sDue.Count > 4096) sDue.Clear();
+				sDue[__instance.NetworkObjectId] = new Due { M = __instance, At = Time.realtimeSinceStartup + 1f };
+			}
+			catch (Exception e) { ModKit.Fail("blood moon monsters", e); }
+		}
+
+		internal static void Tick(float now, GameTime time)
+		{
+			if (sDue.Count == 0) return;
+			if (!Night.IsBloodMoon) { sDue.Clear(); return; }
+			sReady.Clear();
+			foreach (var kv in sDue) if (now >= kv.Value.At) sReady.Add(kv.Key);
+			if (sReady.Count == 0) return;
+			float seconds = Clock.SecondsUntilDawn(time);
+			int done = 0;
+			foreach (var key in sReady)
+			{
+				var m = sDue[key].M; sDue.Remove(key);
+				try { if (One(m, seconds)) { done++; if (sWorn.Count < 8192) sWorn.Add(m); } } catch (Exception e) { ModKit.Dbg("dressing a monster: " + e.Message); }
+			}
+			if (done > 0) { Dressed += done; ModKit.Dbg("blood moon: " + done + " monsters made larger and/or shielded for " + seconds.ToString("0", CultureInfo.InvariantCulture) + " s (" + Dressed + " tonight)"); }
+		}
+
+		private static bool One(Monster m, float seconds)
+		{
+			if (m == null || !m.IsSpawned || m.IsDead() || m.IsPlayerAllied) return false;
+			var fx = m.GetComponent<Effects>();
+			if (fx == null) return false;
+			bool any = false;
+			if (DarkNightsPlugin.BloodGiants.Value && !Effects.IsEffectOnObject(m, Effect.LargeSize))
+			{
+				// the game draws every monster that carries this effect at its own fixed large size
+				// (one and a half times); the number on the effect is not read for that
+				fx.AddEffectToObject(new EffectValues(Effect.LargeSize, (Spell)0, seconds, 999, 1.5f, 0f, 0UL, -1));
+				any = true;
+			}
+			if (DarkNightsPlugin.BloodShield.Value && !Effects.IsEffectOnObject(m, Effect.ShieldDownOverTime))
+			{
+				float max = m.MaxHealth.Value;
+				float amount = max * Mathf.Clamp(DarkNightsPlugin.ShieldPercent.Value, 10, 200) / 100f;
+				if (amount >= 1f && !float.IsNaN(amount) && !float.IsInfinity(amount) && seconds >= 1f)
+				{
+					fx.AddEffectToObject(new EffectValues(Effect.ShieldDownOverTime, (Spell)0, seconds, 999, 1f, amount, 0UL, -1));
+					any = true;
+				}
+			}
+			return any;
+		}
+	}
+
+	// How long until dawn, in real seconds: the clock's own pace is measured while it runs (an
+	// owner may have changed the day length), and the game is asked which minute stops being night.
+	internal static class Clock
+	{
+		private static float sSecondsPerGameMinute = 1680f / 1440f;
+		private static float sLastReal = -1f, sAccReal; private static int sLastMinute = -1, sAccMinutes;
+
+		internal static void Sample(float now, GameTime time)
+		{
+			int minute = time.Hour * 60 + time.Minute;
+			if (sLastMinute >= 0)
+			{
+				int d = (minute - sLastMinute + 1440) % 1440; float real = now - sLastReal;
+				if (d > 5 || real <= 0f || real > 10f) { sAccReal = 0f; sAccMinutes = 0; }   // the clock was set, or the night was slept away
+				else
+				{
+					sAccReal += real; sAccMinutes += d;
+					if (sAccMinutes >= 30) { float pace = sAccReal / sAccMinutes; if (pace > 0.05f && pace < 60f) sSecondsPerGameMinute = pace; sAccReal = 0f; sAccMinutes = 0; }
+				}
+			}
+			sLastMinute = minute; sLastReal = now;
+		}
+
+		internal static float SecondsUntilDawn(GameTime time)
+		{
+			int minutes = 0;
+			try
+			{
+				var tm = TimeManager.Singleton;
+				int start = time.Hour * 60 + time.Minute;
+				for (minutes = 5; minutes <= 16 * 60; minutes += 5)
+				{
+					int total = start + minutes;
+					if (!tm.DetermineIfNight(new GameTime(time.Year, time.Month, time.Day, (total / 60) % 24, total % 60))) break;
+				}
+			}
+			catch { minutes = 360; }
+			return Mathf.Clamp(minutes * sSecondsPerGameMinute, 30f, 3600f);
 		}
 	}
 }
