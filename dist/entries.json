@@ -106,5 +106,23 @@
     "description": "Teleport commands for co-op groups: /summon your party, /tpa a friend, /home, /back and /where, with cooldowns and no travel out of a fight. Players install nothing.",
     "dependencies": [],
     "revoked": false
+  },
+  {
+    "id": "HumanGenome-BountyBoardPlus",
+    "name": "Bounty Board Plus",
+    "version": "1.0.0",
+    "author": "HumanGenome",
+    "side": "server",
+    "game_build": 25350646,
+    "dll": "BountyBoardPlus.dll",
+    "dll_sha256": "3c2388b4ef3529d72ed81cd189cdd156503a16c0f13e42a4089487a2d4f8ab59",
+    "sha256": "0b384c32a6835a78e45cd520d83bed37b182630e841d3e595ead6c272a545cc5",
+    "size": 18634,
+    "url": "https://github.com/HumanGenome/WaygateMods-first/releases/download/HumanGenome-BountyBoardPlus-v1.0.0/HumanGenome-BountyBoardPlus-1.0.0.zip",
+    "source": "https://github.com/HumanGenome/WaygateMods-first/tree/main/BountyBoardPlus",
+    "license": "MIT",
+    "description": "The game's bounty boards, tuned by the server: new postings on a real-time clock, cooldowns off or shortened, a higher tier ceiling, more postings per board, chat lines for unlocks and boss kills, /bounties in chat. Players install nothing.",
+    "dependencies": [],
+    "revoked": false
   }
 ]
