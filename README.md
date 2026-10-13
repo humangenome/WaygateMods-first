@@ -1,6 +1,6 @@
 # WaygateMods-first
 
-First-party mods for Dimraeth servers run with [WaygateServer](https://github.com/HumanGenome/WaygateServer), each its own project with its own README and MIT license. They are listed in the [WaygateMods](https://github.com/HumanGenome/WaygateMods) registry, which is where the Waygate app and hosting panels read them from.
+Nine mods for Dimraeth servers run with [WaygateServer](https://github.com/HumanGenome/WaygateServer), each its own project with its own README and MIT license. Eight run on the server only and players install nothing; Client HUD is the one with a player-side piece, which the Waygate app installs on connect. All nine are listed in the signed [WaygateMods](https://github.com/HumanGenome/WaygateMods) registry.
 
 | Mod | Side | What it does |
 |---|---|---|
@@ -27,3 +27,11 @@ That builds every mod, writes each dll's sha256 into its `waygate-mod.json`, zip
 `Shared/Kit.cs` is source that the newer server mods compile into their own dll (a mod zip carries one dll): patches applied one by one, a switch that turns a mod off after repeated errors instead of stopping the server, chat lines, and a settings file that is re-read when it changes. A mod folder may carry `panel-settings.json`, a description of its settings that a hosting panel can draw as a form; it is not part of the zip.
 
 A mod zip holds, at its root: `waygate-mod.json`, the plugin dll the manifest names, `README.md` and `LICENSE`. It is installed by extracting it into `BepInEx\plugins\mods\<id>\`. The manifest fields are documented in the registry's [CONTRIBUTING](https://github.com/HumanGenome/WaygateMods/blob/main/CONTRIBUTING.md).
+
+## Security
+
+Report a security problem in one of these mods through [private reporting](https://github.com/HumanGenome/WaygateMods-first/security/advisories/new), never a public issue. There is no security mailing address.
+
+## License
+
+MIT for every mod in this repository, see [LICENSE](LICENSE).
