@@ -7,7 +7,7 @@
   "dll": "DarkNights.dll",
   "sha256": "be6bd7fd0735d70bd2f1899995a843ead13392060b0884e49bee930baf17bd7b",
   "game_build": 25350646,
-  "description": "Harder nights and a blood moon every Nth night: more monster damage, more empowered monsters where the game has them, storm weather, every dead monster back at dusk, larger and shielded until dawn, no sleeping through it. Players install nothing.",
+  "description": "Harder nights, and a blood moon every 7th night by default: monsters hit harder, more of them are empowered, storms roll in, every dead monster comes back larger and shielded until dawn, and nobody can sleep through it. Players install nothing.",
   "dependencies": [],
   "source": "https://github.com/HumanGenome/WaygateMods-first/tree/main/DarkNights",
   "license": "MIT"

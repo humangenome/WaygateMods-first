@@ -7,7 +7,7 @@
   "dll": "CorruptedRealm.dll",
   "sha256": "fb30b115b507338a92e46b8288d43bcda40c8039eafb2abb6647872ff3bc63dd",
   "game_build": 25350646,
-  "description": "An elite hunt: empowered monsters are several times as common and ordinary monsters can be empowered too, they gain levels, pay more and are announced when they fall; optional named champions come for a random player; monster damage can rise with the player count. Players install nothing.",
+  "description": "An elite hunt: empowered monsters are several times as common, and ordinary monsters can be empowered too. They gain levels, give more XP, gold and loot, and are announced when they fall. Optional named champions come for a random player, and monster damage can rise with the player count. Players install nothing.",
   "dependencies": [],
   "source": "https://github.com/HumanGenome/WaygateMods-first/tree/main/CorruptedRealm",
   "license": "MIT"

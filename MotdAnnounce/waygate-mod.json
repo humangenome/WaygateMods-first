@@ -7,7 +7,7 @@
   "dll": "MotdAnnounce.dll",
   "sha256": "62002bed12fea4ccccddea118d518e574674fd9a2a77277eb87e5cb4bfc1e8a7",
   "game_build": 25335390,
-  "description": "A welcome line in chat when a player joins, and a repeating announcement. Server side, players install nothing.",
+  "description": "A welcome line in chat when a player joins, and a repeating announcement. Players install nothing.",
   "dependencies": [],
   "source": "https://github.com/HumanGenome/WaygateMods-first/tree/main/MotdAnnounce",
   "license": "MIT"

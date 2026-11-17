@@ -7,7 +7,7 @@
   "dll": "ClientHud.dll",
   "sha256": "e8865da76f1e715f70d556cf772cf9fb3fd4ac20c65e78fde0c299c531992477",
   "game_build": 25335390,
-  "description": "Shows the server's name and player count in the corner of the screen while you are connected. Installed on your PC by the Waygate app.",
+  "description": "Shows the server's name and player count in the corner of the screen while you're connected. The Waygate app installs it on your PC.",
   "dependencies": [],
   "source": "https://github.com/HumanGenome/WaygateMods-first/tree/main/ClientHud",
   "license": "MIT"
