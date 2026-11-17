@@ -984,7 +984,7 @@ namespace WaygateMods.HordeNights
 					}
 					Areas.Scene scene = Areas.Scene.None; try { scene = me.Scene.Value; } catch { }
 					string why;
-					if (!Start(scene, words.Length > 1 ? words[1] : "", ModKit.NameOf(me), out why)) ModKit.Whisper(source, "No horde: " + why + ".", false);
+					if (!Start(scene, words.Length > 1 ? words[1] : "", ModKit.NameOf(me), out why)) ModKit.Whisper(source, "Couldn't call a horde: " + why + ".", false);
 					return false;
 				}
 				ModKit.Whisper(source, Status() + (IsAdmin(me) ? " Admins: /horde start [goblins|wolves|droops|corrupted], /horde stop." : ""), false);

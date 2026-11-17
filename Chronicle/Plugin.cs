@@ -397,7 +397,7 @@ namespace WaygateMods.Chronicle
 			{
 				var p = ModKit.PlayerOf(source);
 				var hash = p != null ? ModKit.HashOf(p) : "";
-				if (hash.Length == 0) return "Chronicle does not know your character yet. Try again in a moment.";
+				if (hash.Length == 0) return "Chronicle doesn't know your character yet. Try again in a moment.";
 				row = Store.Get(hash, ModKit.NameOf(p));
 			}
 			var line = row.Name + ": " + Count(row.Kills, "kill");

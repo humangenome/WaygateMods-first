@@ -882,23 +882,23 @@ namespace WaygateMods.CorruptedRealm
 			MonsterType type;
 			if (!string.IsNullOrWhiteSpace(typeName))
 			{
-				if (!TryType(typeName, out type)) { why = "'" + typeName.Trim() + "' is not a monster type the game knows."; return false; }
+				if (!TryType(typeName, out type)) { why = "'" + typeName.Trim() + "' isn't a monster type the game knows."; return false; }
 			}
 			else
 			{
 				var types = new List<MonsterType>();
 				foreach (var part in (CorruptedRealmPlugin.ChampionTypes.Value ?? "").Split(',')) { MonsterType t; if (TryType(part, out t) && Refusal(t) == null) types.Add(t); }
-				if (types.Count == 0) { why = "Champion/Types names no monster type that can be a champion."; return false; }
+				if (types.Count == 0) { why = "None of the monster types in Champion/Types can be a champion."; return false; }
 				type = types[sRandom.Next(types.Count)];
 			}
 			if (!Story.Guarded) { why = "Champions are off on this game version."; return false; }
 			string refusal = Refusal(type);
 			if (refusal != null) { why = refusal; return false; }
 			Areas.Scene scene; Vector3 at;
-			try { scene = target.Scene.Value; at = target.transform.position; } catch { why = "That player is not in the world yet."; return false; }
+			try { scene = target.Scene.Value; at = target.transform.position; } catch { why = "That player isn't in the world yet."; return false; }
 			if (IsSafe(scene)) { why = ModKit.NameOf(target) + " is in a safe area."; return false; }
 			var handler = HandlerFor(scene);
-			if (handler == null) { why = "The area " + scene + " is not loaded on the server."; return false; }
+			if (handler == null) { why = scene + " isn't loaded on the server."; return false; }
 
 			// A point on walkable ground a short way from the player: the game's own picker for
 			// its runtime spawns, asked for a spot round a point seven units out.
@@ -913,7 +913,7 @@ namespace WaygateMods.CorruptedRealm
 
 			var no = handler.SpawnMonsterInstance(type, spot, name, true, true, InGameEvent.None, null, true);
 			var monster = no != null ? no.GetComponent<Monster>() : null;
-			if (monster == null) { why = "The game did not spawn a " + type + " there."; return false; }
+			if (monster == null) { why = "The game didn't spawn a " + type + " there."; return false; }
 			// The same question once more, of the monster itself, in case the prefab could not be read.
 			bool story = true;
 			try { story = Kinds.StoryOrBoss(monster.MonsterConfiguration) || monster.GetComponentInChildren<BossInvulnerability>(true) != null; } catch { }

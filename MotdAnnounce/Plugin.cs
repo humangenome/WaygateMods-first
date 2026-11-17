@@ -34,7 +34,7 @@ namespace WaygateMods.MotdAnnounce
 		public override void Load()
 		{
 			Logger = Log;
-			Motd = Config.Bind("Messages", "Motd", "Welcome, {player}. Have fun and play fair.", "Sent as a [Server] line when a player joins. {player} is the joining character's name. Empty = off.");
+			Motd = Config.Bind("Messages", "Motd", "Welcome, {player}.", "Sent as a [Server] line when a player joins. {player} is the joining character's name. Empty = off.");
 			JoinDelaySeconds = Config.Bind("Messages", "JoinDelaySeconds", 8, "Seconds after a join before the message is sent (the player's chat must be up). 3 to 60.");
 			Announcement = Config.Bind("Messages", "Announcement", "", "Sent as a [Server] line to everyone on a timer. Empty = off.");
 			AnnounceEveryMinutes = Config.Bind("Messages", "AnnounceEveryMinutes", 30, "Minutes between announcements. 1 to 1440.");

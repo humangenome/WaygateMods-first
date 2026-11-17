@@ -62,12 +62,12 @@ namespace WaygateMods.DarkNights
 			BloodBlockSleep = Config.Bind("BloodMoon", "BlockSleep", true, "Nobody can sleep the blood moon away.");
 			WarnGameMinutes = Config.Bind("BloodMoon", "WarnGameMinutes", 60, "Game minutes of warning before a blood moon rises. 0 = no warning. Up to 180.");
 
-			MsgDusk = Config.Bind("Messages", "Dusk", "Night falls. The monsters grow bold.", "Chat line at dusk on an ordinary night. Empty = none.");
-			MsgDawn = Config.Bind("Messages", "Dawn", "Dawn. The night's danger has passed.", "Chat line at dawn after an ordinary night. Empty = none.");
-			MsgWarn = Config.Bind("Messages", "BloodMoonWarning", "The sky reddens. A blood moon rises at dusk. Find shelter or find your friends.", "Chat line before a blood moon. Empty = none.");
-			MsgRise = Config.Bind("Messages", "BloodMoonRises", "The blood moon rises. The dead return, and nothing sleeps tonight.", "Chat line when a blood moon rises. Empty = none.");
-			MsgPass = Config.Bind("Messages", "BloodMoonPasses", "The blood moon passes. You lived.", "Chat line at dawn after a blood moon. Empty = none.");
-			MsgNoSleep = Config.Bind("Messages", "NoSleep", "Nobody sleeps under a blood moon.", "Chat line for a player who tries to sleep under a blood moon.");
+			MsgDusk = Config.Bind("Messages", "Dusk", "Night falls. Monsters hit harder and give more XP and loot until dawn.", "Chat line at dusk on an ordinary night. Empty = none.");
+			MsgDawn = Config.Bind("Messages", "Dawn", "Dawn breaks. Monsters are back to normal.", "Chat line at dawn after an ordinary night. Empty = none.");
+			MsgWarn = Config.Bind("Messages", "BloodMoonWarning", "A blood moon rises at dusk. Group up before it does.", "Chat line before a blood moon. Empty = none.");
+			MsgRise = Config.Bind("Messages", "BloodMoonRises", "The blood moon has risen. Every dead monster is back, and nobody can sleep until dawn.", "Chat line when a blood moon rises. Empty = none.");
+			MsgPass = Config.Bind("Messages", "BloodMoonPasses", "The blood moon is over. Monsters are back to normal.", "Chat line at dawn after a blood moon. Empty = none.");
+			MsgNoSleep = Config.Bind("Messages", "NoSleep", "You can't sleep under a blood moon.", "Chat line for a player who tries to sleep under a blood moon.");
 
 			var harmony = new Harmony(PluginId);
 			ModKit.Init(Log, harmony, "Dark Nights");

@@ -4,7 +4,7 @@ A server-side mod for Dimraeth servers run with [WaygateServer](https://github.c
 
 | Key | What it does | Default |
 |---|---|---|
-| `Motd` | Sent to chat a few seconds after a player joins. `{player}` becomes the character's name. Empty turns it off. | `Welcome, {player}. Have fun and play fair.` |
+| `Motd` | Sent to chat a few seconds after a player joins. `{player}` becomes the character's name. Empty turns it off. | `Welcome, {player}.` |
 | `JoinDelaySeconds` | Wait after the join before sending, so the player's chat is open. 3 to 60. | 8 |
 | `Announcement` | Sent to everyone on a timer. Empty turns it off. | (empty) |
 | `AnnounceEveryMinutes` | Minutes between announcements. 1 to 1440. | 30 |

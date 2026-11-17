@@ -84,7 +84,7 @@ namespace WaygateMods.WaygateTravel
 			if (WaygateTravelPlugin.HomeOn.Value) l.Add("/home");
 			if (WaygateTravelPlugin.BackOn.Value) l.Add("/back");
 			if (WaygateTravelPlugin.WhereOn.Value) l.Add("/where <name>");
-			return l.Count == 0 ? "nothing (every command is switched off)" : string.Join(", ", l);
+			return l.Count == 0 ? "none (every command is off)" : string.Join(", ", l);
 		}
 
 		internal static void Tick()
@@ -198,9 +198,9 @@ namespace WaygateMods.WaygateTravel
 		// Why this player cannot leave right now, or null.
 		private static string CannotLeave(Player p)
 		{
-			if (Dead(p)) return "You cannot travel while dead.";
-			if (Busy(p)) return "You are already travelling.";
-			if (InCombat(p)) return "You cannot travel out of a fight.";
+			if (Dead(p)) return "You can't travel while dead.";
+			if (Busy(p)) return "You're already travelling.";
+			if (InCombat(p)) return "You can't travel during a fight.";
 			return null;
 		}
 
@@ -208,7 +208,7 @@ namespace WaygateMods.WaygateTravel
 		private static bool Move(Player mover, Areas.Scene scene, Vector3 position, string whereText)
 		{
 			var sm = SpawnManager.Singleton;
-			if (sm == null) { Reply(mover.OwnerClientId, "Travel is not ready yet. Try again in a moment."); return false; }
+			if (sm == null) { Reply(mover.OwnerClientId, "Travel isn't ready yet. Try again in a moment."); return false; }
 			var hash = ModKit.HashOf(mover);
 			try { if (hash.Length > 0) sBack[hash] = new Spot { Scene = mover.Scene.Value, Position = mover.transform.position }; } catch { }
 			sm.LoadPlayerLocationClientRpc(scene, position, mover.OwnerClientId, false, false);
@@ -232,8 +232,8 @@ namespace WaygateMods.WaygateTravel
 			if (me == null) return;
 			int left;
 			if (OnCooldown(me, "summon", WaygateTravelPlugin.SummonCooldown.Value, out left)) { Reply(source, "You can summon again in " + left + " seconds."); return; }
-			if (Dead(me)) { Reply(source, "You cannot summon while dead."); return; }
-			if (InCombat(me)) { Reply(source, "You cannot summon your party into a fight."); return; }
+			if (Dead(me)) { Reply(source, "You can't summon while dead."); return; }
+			if (InCombat(me)) { Reply(source, "You can't summon your party into a fight."); return; }
 
 			var members = new List<Player>();
 			try
@@ -276,7 +276,7 @@ namespace WaygateMods.WaygateTravel
 			if (who.Length == 0) { Reply(source, "Type /tpa and a player's name."); return; }
 			var target = ModKit.FindByName(who);
 			if (target == null) { Reply(source, "No player here is called '" + who + "'."); return; }
-			if (target.OwnerClientId == source) { Reply(source, "You are already there."); return; }
+			if (target.OwnerClientId == source) { Reply(source, "You're already there."); return; }
 			int left;
 			if (OnCooldown(me, "tpa", WaygateTravelPlugin.TpaCooldown.Value, out left)) { Reply(source, "You can ask again in " + left + " seconds."); return; }
 			var why = CannotLeave(me);
@@ -303,9 +303,9 @@ namespace WaygateMods.WaygateTravel
 
 			Player mover = r.Kind == Kind.Tpa ? other : me, dest = r.Kind == Kind.Tpa ? me : other;
 			var why = CannotLeave(mover);
-			if (why != null) { Reply(mover.OwnerClientId, why); if (mover != me) Reply(source, ModKit.NameOf(mover) + " cannot travel right now."); else Reply(r.From, ModKit.NameOf(me) + " cannot travel right now."); return; }
-			if (Dead(dest)) { Reply(mover.OwnerClientId, ModKit.NameOf(dest) + " is dead. Try again when they are back."); return; }
-			if (InCombat(dest)) { Reply(mover.OwnerClientId, ModKit.NameOf(dest) + " is in a fight. Try again when it is over."); return; }
+			if (why != null) { Reply(mover.OwnerClientId, why); if (mover != me) Reply(source, ModKit.NameOf(mover) + " can't travel right now."); else Reply(r.From, ModKit.NameOf(me) + " can't travel right now."); return; }
+			if (Dead(dest)) { Reply(mover.OwnerClientId, ModKit.NameOf(dest) + " is dead. Try again when they're back."); return; }
+			if (InCombat(dest)) { Reply(mover.OwnerClientId, ModKit.NameOf(dest) + " is in a fight. Try again when it's over."); return; }
 			Areas.Scene scene = Areas.Scene.None; try { scene = dest.Scene.Value; } catch { }
 			Areas.Scene from = Areas.Scene.None; try { from = mover.Scene.Value; } catch { }
 			if (scene != from && Locked(scene)) { Reply(mover.OwnerClientId, Words(scene) + " is locked by a bounty in progress."); return; }
@@ -321,7 +321,7 @@ namespace WaygateMods.WaygateTravel
 			var why = CannotLeave(me);
 			if (why != null) { Reply(source, why); return; }
 			Areas.Scene scene; Vector3 pos;
-			if (!SpawnPoint(me, out scene, out pos)) { Reply(source, "The server has no respawn point on record for you yet."); return; }
+			if (!SpawnPoint(me, out scene, out pos)) { Reply(source, "You don't have a respawn point yet."); return; }
 			if (Move(me, scene, pos, "their respawn point in " + Words(scene))) StartCooldown(me, "home", WaygateTravelPlugin.HomeCooldown.Value);
 		}
 
@@ -334,7 +334,7 @@ namespace WaygateMods.WaygateTravel
 			var why = CannotLeave(me);
 			if (why != null) { Reply(source, why); return; }
 			Spot spot;
-			if (!sBack.TryGetValue(ModKit.HashOf(me), out spot)) { Reply(source, "There is nowhere to go back to yet."); return; }
+			if (!sBack.TryGetValue(ModKit.HashOf(me), out spot)) { Reply(source, "There's nowhere to go back to yet."); return; }
 			Areas.Scene from = Areas.Scene.None; try { from = me.Scene.Value; } catch { }
 			if (spot.Scene != from && Locked(spot.Scene)) { Reply(source, Words(spot.Scene) + " is locked by a bounty in progress."); return; }
 			if (Move(me, spot.Scene, spot.Position, "where they were in " + Words(spot.Scene))) StartCooldown(me, "back", WaygateTravelPlugin.BackCooldown.Value);
