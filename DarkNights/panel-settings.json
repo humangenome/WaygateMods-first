@@ -18,7 +18,7 @@
     "type": "float",
     "default": 1.25,
     "label": "Special attacks",
-    "help": "How fast the cooldowns of monster special attacks run at night. How often a monster attacks also follows the game's own combat pace, so expect more pressure, not that many times the attacks.",
+    "help": "How fast monster special attacks come back at night. Monsters also keep the game's own combat pace, so they attack more often, but not by the full multiple.",
     "group": "Every night",
     "min": 1,
     "max": 3,
@@ -206,7 +206,7 @@
     "type": "bool",
     "default": true,
     "label": "No sleeping it away",
-    "help": "Players cannot sleep through a blood moon.",
+    "help": "Players can't sleep through a blood moon.",
     "group": "Blood moon"
   },
   {
