@@ -23,7 +23,7 @@ Tested on game build 25335390.
 
 ## Build
 
-Set `WAYGATE_PACK` to the `BepInEx` folder of an unpacked WaygateServer package, then `dotnet build -c Release`.
+Set `WAYGATE_PACK` to the `BepInEx` folder of an unzipped WaygateServer download, then `dotnet build -c Release`.
 
 ## License
 

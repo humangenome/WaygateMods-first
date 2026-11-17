@@ -1,6 +1,6 @@
 # Horde Nights
 
-Dimraeth has no wave events: monsters stand where the area put them and wait. Horde Nights is a server-side mod for Dimraeth servers run with [WaygateServer](https://github.com/HumanGenome/WaygateServer) that adds them. Every Nth night, or when an admin types `/horde start`, a horde comes for the players: a warning in chat, then wave after wave of monsters that appear round the defenders and come straight at them, healing and a gold drop between waves, and a last wave with a leader. When it is over the mod removes every monster it made. Everything runs on the server, so players install nothing.
+Dimraeth has no wave events: monsters stand where the area put them and wait. Horde Nights is a server-side mod for Dimraeth servers run with [WaygateServer](https://github.com/HumanGenome/WaygateServer) that adds them. Every 3rd night by default, or when an admin types `/horde start`, a horde comes for the players: a warning in chat, then wave after wave of monsters that appear around the defenders and come straight at them, healing and a gold drop between waves, and a last wave with a leader. When it is over the mod removes every monster it made. Everything runs on the server, so players install nothing.
 
 ## What players see
 
@@ -92,7 +92,7 @@ Loot that nobody picks up costs CPU too, for as long as it lies there: about 0.8
 
 ## The file
 
-`BepInEx\config\HumanGenome-HordeNights\horde.txt` holds two lines: how many horde hours the server has seen (the schedule counts from it) and whether a horde was under way. Horde monsters are spawned as transient, which the game never writes to the world save, so a server that stops in the middle of a horde starts again without them; the mod says so in one line and carries on with the schedule. On every start and at the end of every horde it also removes any monster that still carries its name.
+`BepInEx\config\HumanGenome-HordeNights\horde.txt` holds two lines: how many horde hours the server has seen (the schedule counts from it) and whether a horde was under way. Horde monsters are spawned as temporary monsters, which the game never writes to the world save, so a server that stops in the middle of a horde starts again without them. The mod says so in one line and carries on with the schedule. On every start and at the end of every horde it also removes any monster that still carries its name.
 
 ## Install
 
@@ -110,7 +110,7 @@ The game ties its story to the kind of monster, not to the one the story placed.
 
 If a game update removes a method the mod depends on, the mod switches the affected feature off, or itself off, and writes one line saying so. It never stops the server.
 
-Tested on game build 25350646 with WaygateServer 0.3.9, with headless test clients: monsters of all four themes spawn and are seen by clients, monsters and players kill each other with the game's own XP and gold paid, the cap on living monsters holds, every ending removes every horde monster, a server ended in the middle of a horde starts again without them, a horde's copy of a story boss starts no story event, and after the clean-up the area holds the monsters and the loot it held before the horde, a player's own summon and a player's own dropped item included. Not yet looked at on a real player's screen.
+Tested on game build 25350646 with WaygateServer 0.3.9, with automated test clients: monsters of all four themes spawn and are seen by clients, monsters and players kill each other with the game's own XP and gold paid, the cap on living monsters holds, every ending removes every horde monster, a server ended in the middle of a horde starts again without them, a horde's copy of a story boss starts no story event, and after the clean-up the area holds the monsters and the loot it held before the horde, a player's own summon and a player's own dropped item included. Not yet looked at on a real player's screen.
 
 ## With other mods
 
@@ -118,7 +118,7 @@ Tested on game build 25350646 with WaygateServer 0.3.9, with headless test clien
 
 ## Build
 
-Set `WAYGATE_PACK` to the `BepInEx` folder of an unpacked WaygateServer package (or of a game folder after one Waygate Connect), then `dotnet build -c Release`. The interop assemblies are referenced from there and are not part of this repository. `../Shared/Kit.cs` is compiled into the dll.
+Set `WAYGATE_PACK` to the `BepInEx` folder of an unzipped WaygateServer download (or of a game folder after one Waygate Connect), then `dotnet build -c Release`. The interop assemblies are read from there and aren't part of this repository. `../Shared/Kit.cs` is compiled into the dll.
 
 ## License
 

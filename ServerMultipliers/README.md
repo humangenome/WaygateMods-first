@@ -26,7 +26,7 @@ Tested on game build 25335390.
 
 ## Build
 
-Set `WAYGATE_PACK` to the `BepInEx` folder of an unpacked WaygateServer package (or of a game folder after one Waygate Connect), then `dotnet build -c Release`. The interop assemblies are referenced from there and are not part of this repository.
+Set `WAYGATE_PACK` to the `BepInEx` folder of an unzipped WaygateServer download (or of a game folder after one Waygate Connect), then `dotnet build -c Release`. The interop assemblies are read from there and aren't part of this repository.
 
 ## License
 

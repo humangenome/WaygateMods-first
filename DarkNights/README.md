@@ -1,6 +1,6 @@
 # Dark Nights
 
-In Dimraeth a night is no more dangerous than a day, and there is no blood moon. Dark Nights is a server-side mod for Dimraeth servers run with [WaygateServer](https://github.com/HumanGenome/WaygateServer) that makes nights harder and turns every Nth night into a blood moon. Everything is computed on the server, so players install nothing.
+In Dimraeth a night is no more dangerous than a day, and there is no blood moon. Dark Nights is a server-side mod for Dimraeth servers run with [WaygateServer](https://github.com/HumanGenome/WaygateServer) that makes nights harder and turns every 7th night (you can change it) into a blood moon. Everything is computed on the server, so players install nothing.
 
 ## What changes
 
@@ -69,11 +69,11 @@ Tested on game build 25350646 with WaygateServer 0.3.10, alone and beside Corrup
 - The two empowered-monster dials did nothing in 1.0.0: they scaled a game value that the game never reads. They now scale the chance the game's roll uses. Their range is 1 to 3, because 3 already empowers every monster the game can empower.
 - The blood moon's shield set no shield in 1.0.0. It is now the game's own spell shield, sized by the new `ShieldPercent`, and it lasts until dawn.
 - `GiantSize` is gone: the game draws every larger monster at one and a half times its size whatever number is given.
-- Monsters that RETURN from death under a blood moon are made larger and shielded as well, and both end at dawn.
+- Monsters that return from death under a blood moon are made larger and shielded as well, and both end at dawn.
 
 ## Build
 
-Set `WAYGATE_PACK` to the `BepInEx` folder of an unpacked WaygateServer package (or of a game folder after one Waygate Connect), then `dotnet build -c Release`. The interop assemblies are referenced from there and are not part of this repository. `../Shared/Kit.cs` is compiled into the dll.
+Set `WAYGATE_PACK` to the `BepInEx` folder of an unzipped WaygateServer download (or of a game folder after one Waygate Connect), then `dotnet build -c Release`. The interop assemblies are read from there and aren't part of this repository. `../Shared/Kit.cs` is compiled into the dll.
 
 ## License
 
