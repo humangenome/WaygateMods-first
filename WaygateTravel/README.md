@@ -19,7 +19,7 @@ An answer is shown only to the player it is for, and a line the mod answers is n
 ## Rules
 
 - Each command has a cooldown per character (300, 120, 300 and 60 seconds for `/summon`, `/tpa`, `/home` and `/back`).
-- No travel while dead, while already travelling, or out of a fight. No travel to a player who is dead or in a fight.
+- No travel while dead, while already traveling, or out of a fight. No travel to a player who is dead or in a fight.
 - No travel into an area that a bounty in progress has locked.
 - `/back` remembers one place per character until the server restarts.
 

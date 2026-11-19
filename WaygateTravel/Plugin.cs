@@ -199,7 +199,7 @@ namespace WaygateMods.WaygateTravel
 		private static string CannotLeave(Player p)
 		{
 			if (Dead(p)) return "You can't travel while dead.";
-			if (Busy(p)) return "You're already travelling.";
+			if (Busy(p)) return "You're already traveling.";
 			if (InCombat(p)) return "You can't travel during a fight.";
 			return null;
 		}
